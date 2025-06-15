@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+
+option java_generate_equals_and_hash = true;
+option java_outer_classname = "InventoryProto";
+
+option java_package = "com.example.inventoryservice.grpc";
+option java_multiple_files = true;
+
+package inventory;
+
+service InventoryService {
+  rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+}
+
+message CheckStockRequest {
+  string productId        = 1;
+  int32  requestedQuantity = 2; // bu alanı eklediğimize dikkat et
+}
+
+message CheckStockResponse {
+  bool inStock           = 1;
+  int32 availableQuantity = 2;
+}
