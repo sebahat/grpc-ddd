@@ -1,24 +1,49 @@
 version: '3.8'
 
 services:
+
+  # ======================
+  # ORDER DATABASE
+  # ======================
+  order-postgres:
+    image: postgres:15
+    container_name: order-postgres
+    environment:
+      POSTGRES_DB: ordersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - microservices-net
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+
+  # ======================
+  # ORDER SERVICE
+  # ======================
   order-service:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: order-service
+    depends_on:
+      - order-postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:h2:mem:ordersdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-      SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: ""
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-postgres:5432/ordersdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     ports:
-      - "9092:9092"   # REST API port
+      - "9092:9092"
     networks:
       - microservices-net
-
-volumes:
-  orders-db-data:
+    restart: unless-stopped
 
 networks:
   microservices-net:
     external: true
+
+volumes:
+  order-db-data:
+
+

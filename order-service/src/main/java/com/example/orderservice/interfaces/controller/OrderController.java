@@ -12,11 +12,24 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+
+import com.example.orderservice.application.service.OrderService;
+import com.example.orderservice.interfaces.dto.OrderRequestDto;
+import com.example.orderservice.interfaces.dto.OrderResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
-
 public class OrderController {
-    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+    private static final Logger log =
+            LoggerFactory.getLogger(OrderController.class);
 
     private final OrderService orderService;
 
@@ -24,18 +37,34 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @Tag(name = "Orders", description = "Order API işlemleri")
     @PostMapping
-    public ResponseEntity<List<OrderItem>> createOrder(@RequestBody List<OrderItem> items) {
-        logger.info("POST /orders çağrıldı, gelen items sayısı: {}", items.size());
-        return ResponseEntity.ok(orderService.createOrder(items));
+    public ResponseEntity<List<OrderResponseDto>> createOrder(
+            @RequestBody List<OrderRequestDto> request) {
+
+        log.info("Create order request received. itemCount={}", request.size());
+
+        var result = orderService.createOrder(
+                request.stream()
+                        .map(dto -> dto.toDomain())
+                        .toList()
+        );
+
+        var response = result.stream()
+                .map(OrderResponseDto::fromDomain)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Sipariş oluştur", description = "Verilen ürünlerden sipariş oluşturur")
     @GetMapping("/{id}")
-    public ResponseEntity<OrderItem> getOrder(@PathVariable String id) {
-        return ResponseEntity.ok(orderService.getOrder(id));
+    public ResponseEntity<OrderResponseDto> getOrder(@PathVariable String id) {
+
+        log.info("Get order request. id={}", id);
+
+        var order = orderService.getOrder(id);
+
+        return ResponseEntity.ok(
+                OrderResponseDto.fromDomain(order)
+        );
     }
-
-
 }

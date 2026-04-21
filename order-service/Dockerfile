@@ -1,14 +1,27 @@
-# Base image olarak OpenJDK 19 kullanıyoruz
-FROM openjdk:17-jdk-slim
+## ======================
+ # BUILD STAGE
+ # ======================
+ FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Çalışma dizini oluştur
-WORKDIR /app
+ WORKDIR /app
+ COPY . .
 
-# Maven build sonrası jar dosyasını kopyala
-COPY target/order-service-1.0-SNAPSHOT.jar app.jar
+ RUN mvn clean package -DskipTests
 
-EXPOSE 9092
 
-# Uygulamayı çalıştır
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ # ======================
+ # RUNTIME STAGE
+ # ======================
+ FROM eclipse-temurin:17-jdk-jammy
 
+ WORKDIR /app
+
+ # ✔ SABİT JAR NAME
+ COPY --from=build /app/target/order-service-1.0-SNAPSHOT.jar app.jar
+
+ EXPOSE 9092
+
+ ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ HEALTHCHECK --interval=10s --timeout=3s --start-period=20s \
+   CMD wget -qO- http://localhost:9092/actuator/health || exit 1

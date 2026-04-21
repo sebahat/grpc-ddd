@@ -4,12 +4,16 @@ com/example/orderservice/grpc/PlaceOrderResponse$Builder.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceBaseDescriptorSupplier.class
 com/example/orderservice/grpc/OrderProto.class
 com/example/inventoryservice/grpc/CheckStockRequestOrBuilder.class
+com/example/orderservice/interfaces/dto/OrderRequestDto.class
 com/example/orderservice/grpc/PlaceOrderRequest$Builder.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$2.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$InventoryServiceMethodDescriptorSupplier.class
 com/example/inventoryservice/grpc/CheckStockResponseOrBuilder.class
+com/example/orderservice/infastructure/persistence/entity/OrderItemEntity.class
 com/example/inventoryservice/grpc/InventoryProto.class
+com/example/orderservice/interfaces/dto/OrderResponseDto.class
 com/example/inventoryservice/grpc/CheckStockRequest$1.class
+com/example/orderservice/infastructure/persistence/mapper/OrderItemMapper.class
 com/example/orderservice/application/service/OrderService.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$3.class
 com/example/orderservice/domain/model/OrderItem.class
@@ -26,9 +30,10 @@ com/example/orderservice/grpc/PlaceOrderResponseOrBuilder.class
 com/example/inventoryservice/grpc/CheckStockResponse$1.class
 com/example/orderservice/grpc/OrderServiceGrpc.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$InventoryServiceBaseDescriptorSupplier.class
-com/example/orderservice/infastructure/JpaOrderRepository.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$InventoryServiceFutureStub.class
+com/example/orderservice/infastructure/persistence/repository/JpaOrderRepository.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceFileDescriptorSupplier.class
+com/example/orderservice/infastructure/persistence/repository/SpringDataOrderRepository.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceBlockingStub.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$AsyncService.class
 com/example/orderservice/domain/model/OrderItemStatus.class
@@ -36,6 +41,7 @@ com/example/orderservice/interfaces/controller/OrderController.class
 com/example/inventoryservice/grpc/CheckStockResponse.class
 com/example/orderservice/grpc/OrderServiceGrpc$2.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$InventoryServiceBlockingStub.class
+com/example/orderservice/infastructure/grpc/InventoryGrpcClient.class
 com/example/orderservice/OrderServiceApplication.class
 com/example/orderservice/grpc/PlaceOrderResponse$1.class
 com/example/inventoryservice/grpc/InventoryServiceGrpc$1.class
@@ -46,7 +52,6 @@ com/example/inventoryservice/grpc/CheckStockResponse$Builder.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceStub.class
 com/example/orderservice/grpc/PlaceOrderRequest$1.class
 com/example/inventoryservice/grpc/CheckStockRequest$Builder.class
-com/example/orderservice/infastructure/SpringDataOrderRepository.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceFutureStub.class
 com/example/orderservice/grpc/OrderServiceGrpc$1.class
 com/example/orderservice/grpc/OrderServiceGrpc$OrderServiceMethodDescriptorSupplier.class
