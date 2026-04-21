@@ -27,20 +27,20 @@ public class InventoryApplicationService {
     @Transactional(readOnly = true)
     public CheckStockResponseDto checkStock(CheckStockRequestDto request) {
 
-        log.info("CheckStock request received sku={}, qty={}",
+        log.info("CheckStock request received productId={}, qty={}",
                 request.productId(),
                 request.requestedQuantity());
 
-        InventoryItem item = repository.findBySku(request.productId())
+        InventoryItem item = repository.findByProductId(request.productId())
                 .orElseThrow(() -> {
-                    log.warn("Product not found sku={}", request.productId());
+                    log.warn("Product not found productId={}", request.productId());
                     return new ProductNotFoundException(request.productId());
                 });
 
         boolean inStock = item.isInStock(request.requestedQuantity());
 
-        log.info("CheckStock result sku={}, available={}, inStock={}",
-                item.getSku(),
+        log.info("CheckStock result productId={}, available={}, inStock={}",
+                item.getProductId(),
                 item.getQuantity(),
                 inStock);
 
@@ -48,5 +48,16 @@ public class InventoryApplicationService {
                 inStock,
                 item.getQuantity()
         );
+    }
+
+    @Transactional
+    public void decreaseStock(String productId, int quantity) {
+
+        InventoryItem item = repository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        item.decreaseStock(quantity);
+
+        repository.save(item);
     }
 }

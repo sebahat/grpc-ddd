@@ -1,7 +1,6 @@
 package com.example.orderservice.interfaces.dto;
 
 import com.example.orderservice.domain.model.OrderItem;
-
 public class OrderResponseDto {
 
     private String id;
@@ -17,4 +16,9 @@ public class OrderResponseDto {
         dto.status = item.getStatus().name();
         return dto;
     }
+
+    public String getId() { return id; }
+    public String getProductId() { return productId; }
+    public int getQuantity() { return quantity; }
+    public String getStatus() { return status; }
 }

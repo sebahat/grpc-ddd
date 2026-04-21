@@ -9,24 +9,21 @@ import com.example.inventoryservice.infrastructure.persistence.entity.InventoryE
 
 public class InventoryMapper {
 
-
     public static InventoryItem toDomain(InventoryEntity entity) {
         if (entity == null) return null;
 
         return new InventoryItem(
                 entity.getId(),
-                entity.getSku(),
+                entity.getProductId(),
                 entity.getQuantity()
         );
     }
 
-
     public static InventoryEntity toEntity(InventoryItem domain) {
         if (domain == null) return null;
-
         return new InventoryEntity(
                 domain.getId(),
-                domain.getSku(),
+                domain.getProductId(),
                 domain.getQuantity()
         );
     }

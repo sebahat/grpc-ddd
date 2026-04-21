@@ -1,5 +1,5 @@
 package com.example.orderservice.domain.model;
-
+import java.util.UUID;
 
 public class OrderItem {
 
@@ -9,6 +9,7 @@ public class OrderItem {
     private OrderItemStatus status;
 
     public OrderItem(String productId, int quantity) {
+        this.id = UUID.randomUUID().toString();
         this.productId = productId;
         this.quantity = quantity;
         this.status = OrderItemStatus.PENDING;

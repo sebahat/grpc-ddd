@@ -46,6 +46,37 @@ public final class InventoryServiceGrpc {
     return getCheckStockMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.example.inventoryservice.grpc.DecreaseStockRequest,
+      com.example.inventoryservice.grpc.DecreaseStockResponse> getDecreaseStockMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DecreaseStock",
+      requestType = com.example.inventoryservice.grpc.DecreaseStockRequest.class,
+      responseType = com.example.inventoryservice.grpc.DecreaseStockResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.example.inventoryservice.grpc.DecreaseStockRequest,
+      com.example.inventoryservice.grpc.DecreaseStockResponse> getDecreaseStockMethod() {
+    io.grpc.MethodDescriptor<com.example.inventoryservice.grpc.DecreaseStockRequest, com.example.inventoryservice.grpc.DecreaseStockResponse> getDecreaseStockMethod;
+    if ((getDecreaseStockMethod = InventoryServiceGrpc.getDecreaseStockMethod) == null) {
+      synchronized (InventoryServiceGrpc.class) {
+        if ((getDecreaseStockMethod = InventoryServiceGrpc.getDecreaseStockMethod) == null) {
+          InventoryServiceGrpc.getDecreaseStockMethod = getDecreaseStockMethod =
+              io.grpc.MethodDescriptor.<com.example.inventoryservice.grpc.DecreaseStockRequest, com.example.inventoryservice.grpc.DecreaseStockResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DecreaseStock"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.example.inventoryservice.grpc.DecreaseStockRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.example.inventoryservice.grpc.DecreaseStockResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new InventoryServiceMethodDescriptorSupplier("DecreaseStock"))
+              .build();
+        }
+      }
+    }
+    return getDecreaseStockMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -100,6 +131,13 @@ public final class InventoryServiceGrpc {
         io.grpc.stub.StreamObserver<com.example.inventoryservice.grpc.CheckStockResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCheckStockMethod(), responseObserver);
     }
+
+    /**
+     */
+    default void decreaseStock(com.example.inventoryservice.grpc.DecreaseStockRequest request,
+        io.grpc.stub.StreamObserver<com.example.inventoryservice.grpc.DecreaseStockResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDecreaseStockMethod(), responseObserver);
+    }
   }
 
   /**
@@ -136,6 +174,14 @@ public final class InventoryServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCheckStockMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void decreaseStock(com.example.inventoryservice.grpc.DecreaseStockRequest request,
+        io.grpc.stub.StreamObserver<com.example.inventoryservice.grpc.DecreaseStockResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDecreaseStockMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -159,6 +205,13 @@ public final class InventoryServiceGrpc {
     public com.example.inventoryservice.grpc.CheckStockResponse checkStock(com.example.inventoryservice.grpc.CheckStockRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getCheckStockMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public com.example.inventoryservice.grpc.DecreaseStockResponse decreaseStock(com.example.inventoryservice.grpc.DecreaseStockRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDecreaseStockMethod(), getCallOptions(), request);
     }
   }
 
@@ -185,9 +238,18 @@ public final class InventoryServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCheckStockMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.example.inventoryservice.grpc.DecreaseStockResponse> decreaseStock(
+        com.example.inventoryservice.grpc.DecreaseStockRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDecreaseStockMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_CHECK_STOCK = 0;
+  private static final int METHODID_DECREASE_STOCK = 1;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -209,6 +271,10 @@ public final class InventoryServiceGrpc {
         case METHODID_CHECK_STOCK:
           serviceImpl.checkStock((com.example.inventoryservice.grpc.CheckStockRequest) request,
               (io.grpc.stub.StreamObserver<com.example.inventoryservice.grpc.CheckStockResponse>) responseObserver);
+          break;
+        case METHODID_DECREASE_STOCK:
+          serviceImpl.decreaseStock((com.example.inventoryservice.grpc.DecreaseStockRequest) request,
+              (io.grpc.stub.StreamObserver<com.example.inventoryservice.grpc.DecreaseStockResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -235,6 +301,13 @@ public final class InventoryServiceGrpc {
               com.example.inventoryservice.grpc.CheckStockRequest,
               com.example.inventoryservice.grpc.CheckStockResponse>(
                 service, METHODID_CHECK_STOCK)))
+        .addMethod(
+          getDecreaseStockMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.example.inventoryservice.grpc.DecreaseStockRequest,
+              com.example.inventoryservice.grpc.DecreaseStockResponse>(
+                service, METHODID_DECREASE_STOCK)))
         .build();
   }
 
@@ -284,6 +357,7 @@ public final class InventoryServiceGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new InventoryServiceFileDescriptorSupplier())
               .addMethod(getCheckStockMethod())
+              .addMethod(getDecreaseStockMethod())
               .build();
         }
       }

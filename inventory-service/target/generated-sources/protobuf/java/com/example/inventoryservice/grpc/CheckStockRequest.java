@@ -82,10 +82,6 @@ private static final long serialVersionUID = 0L;
   public static final int REQUESTEDQUANTITY_FIELD_NUMBER = 2;
   private int requestedQuantity_ = 0;
   /**
-   * <pre>
-   * bu alanı eklediğimize dikkat et
-   * </pre>
-   *
    * <code>int32 requestedQuantity = 2;</code>
    * @return The requestedQuantity.
    */
@@ -517,10 +513,6 @@ private static final long serialVersionUID = 0L;
 
     private int requestedQuantity_ ;
     /**
-     * <pre>
-     * bu alanı eklediğimize dikkat et
-     * </pre>
-     *
      * <code>int32 requestedQuantity = 2;</code>
      * @return The requestedQuantity.
      */
@@ -529,10 +521,6 @@ private static final long serialVersionUID = 0L;
       return requestedQuantity_;
     }
     /**
-     * <pre>
-     * bu alanı eklediğimize dikkat et
-     * </pre>
-     *
      * <code>int32 requestedQuantity = 2;</code>
      * @param value The requestedQuantity to set.
      * @return This builder for chaining.
@@ -545,10 +533,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     * bu alanı eklediğimize dikkat et
-     * </pre>
-     *
      * <code>int32 requestedQuantity = 2;</code>
      * @return This builder for chaining.
      */

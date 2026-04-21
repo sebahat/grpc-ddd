@@ -3,12 +3,12 @@ package com.example.inventoryservice.domain.model;
 public class InventoryItem {
 
     private Long id;
-    private String sku;
+    private String productId;
     private int quantity;
 
-    public InventoryItem(Long id, String sku, int quantity) {
+    public InventoryItem(Long id, String productId, int quantity) {
         this.id = id;
-        this.sku = sku;
+        this.productId = productId;
         this.quantity = quantity;
     }
 
@@ -23,6 +23,6 @@ public class InventoryItem {
     }
 
     public Long getId() { return id; }
-    public String getSku() { return sku; }
+    public String getProductId() { return productId; }
     public int getQuantity() { return quantity; }
 }

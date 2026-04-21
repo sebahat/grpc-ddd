@@ -3,15 +3,17 @@ package com.example.inventoryservice.infrastructure.grpc;
 import com.example.inventoryservice.application.dto.CheckStockRequestDto;
 import com.example.inventoryservice.application.dto.CheckStockResponseDto;
 import com.example.inventoryservice.application.service.InventoryApplicationService;
-import com.example.inventoryservice.domain.exception.ProductNotFoundException;
 import com.example.inventoryservice.grpc.CheckStockRequest;
 import com.example.inventoryservice.grpc.CheckStockResponse;
 import com.example.inventoryservice.grpc.InventoryServiceGrpc;
-import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.example.inventoryservice.grpc.DecreaseStockRequest;
+import com.example.inventoryservice.grpc.DecreaseStockResponse;
+
+import com.example.inventoryservice.application.validation.CheckStockValidator;
 
 @GrpcService
 public class InventoryServiceImpl extends InventoryServiceGrpc.InventoryServiceImplBase {
@@ -28,20 +30,22 @@ public class InventoryServiceImpl extends InventoryServiceGrpc.InventoryServiceI
     @Override
     public void checkStock(CheckStockRequest request,
                            StreamObserver<CheckStockResponse> responseObserver) {
-        try{
-        log.info("gRPC checkStock request received sku={}, qty={}",
+
+        log.info("gRPC checkStock request received productId={}, qty={}",
                 request.getProductId(),
                 request.getRequestedQuantity());
 
+        CheckStockValidator.validate(
+                request.getProductId(),
+                request.getRequestedQuantity()
+        );
 
         CheckStockRequestDto dto = new CheckStockRequestDto(
                 request.getProductId(),
                 request.getRequestedQuantity()
         );
 
-
         CheckStockResponseDto result = applicationService.checkStock(dto);
-
 
         CheckStockResponse response = CheckStockResponse.newBuilder()
                 .setInStock(result.inStock())
@@ -50,23 +54,22 @@ public class InventoryServiceImpl extends InventoryServiceGrpc.InventoryServiceI
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
 
-       }catch (ProductNotFoundException ex) {
-            log.warn("Product not found in gRPC layer sku={}", request.getProductId());
+    @Override
+    public void decreaseStock(DecreaseStockRequest request,
+                              StreamObserver<DecreaseStockResponse> responseObserver) {
 
-            responseObserver.onError(
-                    Status.NOT_FOUND
-                            .withDescription(ex.getMessage())
-                            .asRuntimeException());
-        } catch (Exception ex){
-            log.error("Unexpected error in gRPC checkStock sku={}",
-                    request.getProductId(), ex);
+        applicationService.decreaseStock(
+                request.getProductId(),
+                request.getQuantity()
+        );
 
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription("Internal server error")
-                            .asRuntimeException()
-            );
-        }
+        DecreaseStockResponse response = DecreaseStockResponse.newBuilder()
+                .setSuccess(true)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 }

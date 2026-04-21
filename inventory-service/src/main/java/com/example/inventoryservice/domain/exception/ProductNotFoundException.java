@@ -1,7 +1,7 @@
 package com.example.inventoryservice.domain.exception;
 
 public class ProductNotFoundException extends RuntimeException {
-    public ProductNotFoundException(String sku) {
-        super("Product not found: " + sku);
+    public ProductNotFoundException(String productId) {
+        super("Product not found: " + productId);
     }
 }

@@ -25,6 +25,16 @@ public final class InventoryProto {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_inventory_CheckStockResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inventory_DecreaseStockRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inventory_DecreaseStockRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_inventory_DecreaseStockResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_inventory_DecreaseStockResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -38,11 +48,15 @@ public final class InventoryProto {
       "ckRequest\022\021\n\tproductId\030\001 \001(\t\022\031\n\021requeste" +
       "dQuantity\030\002 \001(\005\"@\n\022CheckStockResponse\022\017\n" +
       "\007inStock\030\001 \001(\010\022\031\n\021availableQuantity\030\002 \001(" +
-      "\0052]\n\020InventoryService\022I\n\nCheckStock\022\034.in" +
-      "ventory.CheckStockRequest\032\035.inventory.Ch" +
-      "eckStockResponseB8\n!com.example.inventor" +
-      "yservice.grpcB\016InventoryProtoP\001\240\001\001b\006prot" +
-      "o3"
+      "\005\";\n\024DecreaseStockRequest\022\021\n\tproductId\030\001" +
+      " \001(\t\022\020\n\010quantity\030\002 \001(\005\"(\n\025DecreaseStockR" +
+      "esponse\022\017\n\007success\030\001 \001(\0102\261\001\n\020InventorySe" +
+      "rvice\022I\n\nCheckStock\022\034.inventory.CheckSto" +
+      "ckRequest\032\035.inventory.CheckStockResponse" +
+      "\022R\n\rDecreaseStock\022\037.inventory.DecreaseSt" +
+      "ockRequest\032 .inventory.DecreaseStockResp" +
+      "onseB8\n!com.example.inventoryservice.grp" +
+      "cB\016InventoryProtoP\001\240\001\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -60,6 +74,18 @@ public final class InventoryProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_inventory_CheckStockResponse_descriptor,
         new java.lang.String[] { "InStock", "AvailableQuantity", });
+    internal_static_inventory_DecreaseStockRequest_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_inventory_DecreaseStockRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inventory_DecreaseStockRequest_descriptor,
+        new java.lang.String[] { "ProductId", "Quantity", });
+    internal_static_inventory_DecreaseStockResponse_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_inventory_DecreaseStockResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_inventory_DecreaseStockResponse_descriptor,
+        new java.lang.String[] { "Success", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -31,11 +31,6 @@ public class JpaOrderRepository implements OrderItemRepository {
     }
 
     @Override
-    public void save(OrderItem item) {
-
-    }
-
-    @Override
     public Optional<OrderItem> findById(String id) {
         return jpa.findById(id)
                 .map(OrderItemMapper::toDomain);

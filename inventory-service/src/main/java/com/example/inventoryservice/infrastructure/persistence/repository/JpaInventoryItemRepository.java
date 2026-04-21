@@ -10,8 +10,6 @@ import java.util.Optional;
 
 
 
-import com.example.inventoryservice.domain.model.InventoryItem;
-import com.example.inventoryservice.domain.repository.InventoryItemRepository;
 import com.example.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
 
 
@@ -29,17 +27,15 @@ public class JpaInventoryItemRepository implements InventoryItemRepository {
     }
 
     @Override
-    public Optional<InventoryItem> findBySku(String sku) {
-        return springRepo.findBySku(sku)
+    public Optional<InventoryItem> findByProductId(String productId) {
+        return springRepo.findByProductId(productId)
                 .map(InventoryMapper::toDomain);
     }
 
     @Override
     public InventoryItem save(InventoryItem item) {
         InventoryEntity entity = InventoryMapper.toEntity(item);
-
         InventoryEntity saved = springRepo.save(entity);
-
         return InventoryMapper.toDomain(saved);
     }
 }

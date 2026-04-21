@@ -6,7 +6,8 @@ import java.util.Optional;
 
 public interface InventoryItemRepository {
 
-    Optional<InventoryItem> findBySku(String sku);
 
+    Optional<InventoryItem> findByProductId(String productId);
     InventoryItem save(InventoryItem item);
+
 }
