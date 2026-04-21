@@ -1,64 +1,100 @@
 package com.example.orderservice.application.service;
 
-import com.example.inventoryservice.grpc.InventoryServiceGrpc;
 import com.example.orderservice.domain.model.OrderItem;
-import jakarta.persistence.criteria.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.orderservice.domain.model.ProcessedRequest;
 import com.example.orderservice.domain.repository.OrderItemRepository;
-import net.devh.boot.grpc.client.inject.GrpcClient;
+import com.example.orderservice.domain.repository.ProcessedRequestRepository;
+import com.example.orderservice.infastructure.grpc.InventoryGrpcClient;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
-import com.example.orderservice.domain.model.OrderItemStatus;
-import com.example.inventoryservice.grpc.CheckStockRequest;
-import com.example.inventoryservice.grpc.CheckStockResponse;
 
 @Service
 public class OrderService {
 
     private final OrderItemRepository orderItemRepository;
+    private final InventoryGrpcClient inventoryClient;
+    private final ProcessedRequestRepository processedRequestRepository;
 
-   @GrpcClient("inventory-service")
-    private InventoryServiceGrpc.InventoryServiceBlockingStub inventoryStub;
-
-
-    public OrderService(OrderItemRepository orderItemRepository) {
+    public OrderService(OrderItemRepository orderItemRepository,
+                        InventoryGrpcClient inventoryClient,
+                        ProcessedRequestRepository processedRequestRepository) {
         this.orderItemRepository = orderItemRepository;
+        this.inventoryClient = inventoryClient;
+        this.processedRequestRepository = processedRequestRepository;
     }
 
-    @Transactional
-    public List<OrderItem> createOrder(List<OrderItem> orderItems) {
-        // Envanter kontrolü yap
-        List<OrderItem> checkedItems = orderItems.stream()
-                .map(this::checkAndMarkItem)
-                .collect(Collectors.toList());
+    public List<OrderItem> createOrder(String idempotencyKey, List<OrderItem> items) {
 
-        // Order nesnesi oluştur
-       return orderItemRepository.saveAll(checkedItems);
+        var existing = processedRequestRepository.findByIdempotencyKey(idempotencyKey);
 
+        if (existing.isPresent()) {
+            String orderId = existing.get().getOrderId();
+
+            return List.of(
+                    orderItemRepository.findById(orderId)
+                            .orElseThrow(() -> new RuntimeException("Order not found"))
+            );
+        }
+
+        List<OrderItem> processed = items.stream()
+                .map(this::processItem)
+                .toList();
+
+        List<OrderItem> saved = orderItemRepository.saveAll(processed);
+
+        String orderId = saved.get(0).getId();
+
+        try {
+            processedRequestRepository.save(
+                    new ProcessedRequest(
+                            idempotencyKey,
+                            orderId,
+                            LocalDateTime.now()
+                    )
+            );
+        } catch (Exception ex) {
+            var alreadyProcessed = processedRequestRepository.findByIdempotencyKey(idempotencyKey);
+
+            if (alreadyProcessed.isPresent()) {
+                String existingOrderId = alreadyProcessed.get().getOrderId();
+
+                return List.of(
+                        orderItemRepository.findById(existingOrderId)
+                                .orElseThrow(() -> new RuntimeException("Order not found"))
+                );
+            }
+
+            throw ex;
+        }
+
+        return saved;
+    }
+
+    private OrderItem processItem(OrderItem item) {
+
+        var response = inventoryClient.checkStock(
+                item.getProductId(),
+                item.getQuantity()
+        );
+
+        if (!response.getInStock()) {
+            item.fail();
+            return item;
+        }
+
+        inventoryClient.decreaseStock(
+                item.getProductId(),
+                item.getQuantity()
+        );
+
+        item.confirm();
+        return item;
     }
 
     public OrderItem getOrder(String id) {
         return orderItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
     }
-    private OrderItem checkAndMarkItem(OrderItem item) {
-        CheckStockRequest request = CheckStockRequest.newBuilder()
-                .setProductId(item.getProductId())
-                .setRequestedQuantity(item.getQuantity())
-                .build();
-
-       CheckStockResponse response = inventoryStub.checkStock(request);
-
-        // Stok var mı yok mu kontrol et
-        if (response.getInStock()) {
-            item.setStatus(OrderItemStatus.COMPLETED);
-        } else {
-            item.setStatus(OrderItemStatus.FAILED);
-        }
-
-        return item;
-    }
-
-
 }

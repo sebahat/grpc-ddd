@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-
 option java_generate_equals_and_hash = true;
 option java_outer_classname = "InventoryProto";
 
@@ -11,14 +10,28 @@ package inventory;
 
 service InventoryService {
   rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+
+
+  rpc DecreaseStock(DecreaseStockRequest) returns (DecreaseStockResponse);
 }
 
 message CheckStockRequest {
-  string productId        = 1;
-  int32  requestedQuantity = 2; // bu alanı eklediğimize dikkat et
+  string productId = 1;
+  int32 requestedQuantity = 2;
 }
 
 message CheckStockResponse {
-  bool inStock           = 1;
+  bool inStock = 1;
   int32 availableQuantity = 2;
+}
+
+
+message DecreaseStockRequest {
+  string productId = 1;
+  int32 quantity = 2;
+}
+
+
+message DecreaseStockResponse {
+  bool success = 1;
 }

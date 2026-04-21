@@ -21,10 +21,6 @@ public interface CheckStockRequestOrBuilder extends
       getProductIdBytes();
 
   /**
-   * <pre>
-   * bu alanı eklediğimize dikkat et
-   * </pre>
-   *
    * <code>int32 requestedQuantity = 2;</code>
    * @return The requestedQuantity.
    */

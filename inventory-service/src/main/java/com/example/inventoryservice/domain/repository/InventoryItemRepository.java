@@ -1,8 +1,13 @@
 package com.example.inventoryservice.domain.repository;
-import com.example.inventoryservice.domain.model.*;
+
+import com.example.inventoryservice.domain.model.InventoryItem;
+
 import java.util.Optional;
+
 public interface InventoryItemRepository {
-    Optional<InventoryItem> findBySku(String sku);
+
+
+    Optional<InventoryItem> findByProductId(String productId);
     InventoryItem save(InventoryItem item);
 
 }
