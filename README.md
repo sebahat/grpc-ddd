@@ -1,118 +1,170 @@
+# Order & Inventory Microservice System
 
-# grpc-ddd
+This project is a backend microservice system built with Spring Boot to simulate a real-world order processing flow with stock validation.
 
-A sample Java microservices project demonstrating **gRPC communication** and **Domain-Driven Design (DDD)** principles.
+The system consists of two independent services:
 
----
-
-## Table of Contents
-
-- [Overview](#overview)  
-- [Features](#features)  
-- [Prerequisites](#prerequisites)  
-- [Getting Started](#getting-started)  
-- [Running the Services](#running-the-services)  
-- [Project Structure](#project-structure)  
-- [How It Works](#how-it-works)  
-- [Contributing](#contributing)  
-- [License](#license)
+- Order Service → Handles order creation via REST API  
+- Inventory Service → Provides stock validation via gRPC  
 
 ---
 
-## Overview
+## 🚀 Tech Stack
 
-This project showcases a clean and modular microservices architecture implemented in Java. It uses gRPC for efficient inter-service communication and applies Domain-Driven Design principles to organize the codebase.
-
-There are two main services:
-
-- **Inventory Service**: Manages product stock and availability  
-- **Order Service**: Handles order creation and communicates with Inventory Service to verify stock before confirming orders
-
----
-
-## Features
-
-- Layered architecture following DDD patterns (Domain, Application, Infrastructure)  
-- gRPC-based communication between microservices  
-- Dockerized services with Docker Compose for simplified setup  
-- PostgreSQL and H2 integration for data persistence  
-- Clean, maintainable, and scalable code structure
+- Java 17  
+- Spring Boot 3  
+- Spring Data JPA  
+- PostgreSQL  
+- gRPC  
+- Resilience4j (Retry & Fallback)  
+- Swagger / OpenAPI  
+- Docker & Docker Compose  
+- JUnit 5 & Mockito  
 
 ---
 
-## Prerequisites
+## 🧠 Architecture Overview
 
-Before you begin, ensure you have installed:
+### Order Service
+- Exposes REST API  
+- Communicates with Inventory Service using gRPC  
+- Validates stock before creating orders  
+- Implements Idempotency to prevent duplicate orders  
+- Uses Swagger for API documentation  
 
-- Java 17 or later  
-- Maven 3.6 or later  
-- Docker and Docker Compose
+### Inventory Service
+- Exposes gRPC endpoint  
+- Manages product stock  
+- Handles stock validation and updates  
 
 ---
 
-## Getting Started
+## 🔄 Flow
 
-Clone the repository:
+1. Client sends request to Order Service  
+2. Order Service calls Inventory Service (gRPC)  
+3. Inventory checks stock  
+4. If stock is available → order is created  
+5. If not → request fails  
 
-```bash
-git clone https://github.com/sebahat/grpc-ddd.git
-cd grpc-ddd
+---
+
+## ⚡ Features
+
+- REST-based order creation  
+- gRPC inter-service communication  
+- Idempotent request handling (Idempotency-Key)  
+- Retry & fallback support  
+- Swagger UI for API testing  
+- Dockerized environment  
+- Unit testing  
+
+---
+
+## 🐳 Running the Project
+
+### Inventory Service
+
 ```
-Build each service individually by navigating to its directory and running:
-For Inventory Service:
-```bash
 cd inventory-service
-mvn clean install
+docker compose up --build
 ```
-For Order Service:
-```bash
+
+### Order Service
+
+```
 cd order-service
-mvn clean install
+docker compose up --build
 ```
-To start all services and dependencies with Docker Compose, run the following command from the root grpc-ddd directory:
-
-For Inventory Service:
-```bash
-cd inventory-service
-docker-compose up --build
-```
-For Order Service:
-```bash
-cd order-service
-docker-compose up --build
-```
----
-
-## Running the Services
-- Inventory Service runs internally on port 50051 (not exposed externally) and uses PostgreSQL for data persistence.
-
-- Order Service runs on port 9002, is the only service exposed for external access, and uses H2 in-memory database.
-
-You can inspect and test the Order Service APIs via Swagger UI by opening an extra tab at:
-
-http://localhost:9002/swagger-ui.html
 
 ---
 
-## Project Structure
-- inventory-service/ — Inventory microservice implementation using PostgreSQL
+## 📘 API Testing (Swagger)
 
-- order-service/ — Order microservice using H2 database that calls Inventory Service via gRPC
+After starting the Order Service:
 
-- proto/ — Protocol buffer (.proto) definitions for gRPC services
-  
+👉 http://localhost:9092/swagger-ui/index.html
+
+You can:
+- inspect endpoints  
+- send requests  
+- test the system end-to-end  
+
 ---
-## How It Works
 
-- The Order Service sends gRPC requests to the Inventory Service to check product stock availability.
+## 🧪 How to Test
 
-- Inventory Service persists data using PostgreSQL.
+### Create Order
 
-- Order Service uses an H2 in-memory database for quick, lightweight persistence.
+Endpoint:
+POST /orders  
 
-- The project follows Domain-Driven Design principles to maintain clear separation between business logic and infrastructure.
+Header:
+Idempotency-Key: test-123  
 
-- ---
-## Contributing
-Contributions, bug reports, and feature requests are welcome! Feel free to fork the project and submit pull requests.
+Request Body:
 
+```
+[
+  {
+    "productId": "iphone-15-pro",
+    "quantity": 2
+  }
+]
+```
+
+---
+
+### Expected Result
+
+- If stock is available → order is created  
+- If the same request is sent again → duplicate order is NOT created  
+
+---
+
+### Example Response
+
+```
+[
+  {
+    "id": "359d1863-e5c8-44e1-b2e8-0d58857b3273",
+    "productId": "iphone-15-pro",
+    "quantity": 2,
+    "status": "COMPLETED"
+  }
+]
+```
+
+---
+
+## 🧱 Project Structure
+
+```
+grpc-ddd/
+├── README.md
+├── order-service/
+└── inventory-service/
+```
+
+---
+
+## 🔮 Future Improvements
+
+- Kafka integration for asynchronous ERP-to-inventory stock updates  
+- Kubernetes deployment  
+- Centralized logging & monitoring  
+- Improved exception handling  
+
+---
+
+## 🎯 Purpose
+
+This project demonstrates:
+
+- Microservice architecture  
+- Service-to-service communication (gRPC)  
+- Resilient communication (retry + fallback)  
+- Idempotent API design  
+- Containerized development  
+- API documentation with Swagger  
+- Real-world debugging and problem solving  
