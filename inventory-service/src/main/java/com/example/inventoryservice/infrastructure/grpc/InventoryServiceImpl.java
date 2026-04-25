@@ -60,6 +60,11 @@ public class InventoryServiceImpl extends InventoryServiceGrpc.InventoryServiceI
     public void decreaseStock(DecreaseStockRequest request,
                               StreamObserver<DecreaseStockResponse> responseObserver) {
 
+        CheckStockValidator.validate(
+                request.getProductId(),
+                request.getQuantity()
+        );
+
         applicationService.decreaseStock(
                 request.getProductId(),
                 request.getQuantity()

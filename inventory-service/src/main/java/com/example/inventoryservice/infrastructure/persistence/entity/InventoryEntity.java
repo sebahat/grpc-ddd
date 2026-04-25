@@ -10,16 +10,22 @@ public class InventoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_id")
+    @Column(name = "product_id", unique = true, nullable = false)
     private String productId;
+
+    @Column(name = "product_name", nullable = false)
+    private String productName;
+
+    @Column(nullable = false)
     private int quantity;
 
     public InventoryEntity() {
     }
 
-    public InventoryEntity(Long id, String productId , int quantity) {
+    public InventoryEntity(Long id, String productId, String productName, int quantity) {
         this.id = id;
         this.productId = productId;
+        this.productName = productName;
         this.quantity = quantity;
     }
 
@@ -27,7 +33,13 @@ public class InventoryEntity {
         return id;
     }
 
-    public String getProductId() { return productId; }
+    public String getProductId() {
+        return productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
 
     public int getQuantity() {
         return quantity;
@@ -37,7 +49,13 @@ public class InventoryEntity {
         this.id = id;
     }
 
-    public void setProductId(String productId) { this.productId = productId; }
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;

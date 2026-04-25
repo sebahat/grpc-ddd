@@ -1,10 +1,11 @@
 package com.example.orderservice.application.service;
 
+import com.example.orderservice.domain.exception.OrderNotFoundException;
 import com.example.orderservice.domain.model.OrderItem;
 import com.example.orderservice.domain.model.ProcessedRequest;
 import com.example.orderservice.domain.repository.OrderItemRepository;
 import com.example.orderservice.domain.repository.ProcessedRequestRepository;
-import com.example.orderservice.infastructure.grpc.InventoryGrpcClient;
+import com.example.orderservice.infrastructure.grpc.InventoryGrpcClient;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -34,7 +35,7 @@ public class OrderService {
 
             return List.of(
                     orderItemRepository.findById(orderId)
-                            .orElseThrow(() -> new RuntimeException("Order not found"))
+                            .orElseThrow(() -> new OrderNotFoundException(orderId))
             );
         }
 
@@ -62,7 +63,7 @@ public class OrderService {
 
                 return List.of(
                         orderItemRepository.findById(existingOrderId)
-                                .orElseThrow(() -> new RuntimeException("Order not found"))
+                                .orElseThrow(() -> new OrderNotFoundException(existingOrderId))
                 );
             }
 
@@ -95,6 +96,6 @@ public class OrderService {
 
     public OrderItem getOrder(String id) {
         return orderItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException(id));
     }
 }

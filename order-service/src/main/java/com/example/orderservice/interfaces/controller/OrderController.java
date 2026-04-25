@@ -10,15 +10,20 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
+@Validated
 public class OrderController {
 
     private static final Logger log =
@@ -52,14 +57,18 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<List<OrderResponseDto>> createOrder(
             @Parameter(description = "Unique key to prevent duplicate order creation", required = true)
-            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @RequestHeader("Idempotency-Key")
+            @NotBlank(message = "Idempotency-Key header is required")
+            String idempotencyKey,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "List of order items to be created",
                     required = true,
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderRequestDto.class)))
             )
-            @RequestBody List<OrderRequestDto> request) {
+            @RequestBody
+            @NotEmpty(message = "order items must not be empty")
+            List<@Valid OrderRequestDto> request) {
 
         log.info("Create order request received. itemCount={}, idempotencyKey={}",
                 request.size(), idempotencyKey);

@@ -1,7 +1,6 @@
 package com.example.inventoryservice.infrastructure.persistence.repository;
 
 
-import com.example.inventoryservice.domain.model.InventoryItem;
 import com.example.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
