@@ -3,7 +3,6 @@ package com.example.inventoryservice.infrastructure.persistence.repository;
 import com.example.inventoryservice.application.mapper.InventoryMapper;
 import com.example.inventoryservice.domain.model.InventoryItem;
 import com.example.inventoryservice.domain.repository.InventoryItemRepository;
-import com.example.inventoryservice.infrastructure.persistence.repository.SpringDataInventoryItemRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

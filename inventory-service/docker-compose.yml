@@ -15,10 +15,12 @@ services:
       - microservices-net
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   inventory-service:
     build:
       context: .
+      dockerfile: Dockerfile
     container_name: inventory-service
     depends_on:
       - postgres
@@ -26,6 +28,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventorydb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
       - "8080:8080"
       - "9090:9090"

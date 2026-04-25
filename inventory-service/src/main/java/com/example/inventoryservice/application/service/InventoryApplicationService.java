@@ -10,15 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 public class InventoryApplicationService {
-
-    private final InventoryItemRepository repository;
 
     private static final Logger log =
             LoggerFactory.getLogger(InventoryApplicationService.class);
 
+    private final InventoryItemRepository repository;
 
     public InventoryApplicationService(InventoryItemRepository repository) {
         this.repository = repository;
@@ -53,11 +51,49 @@ public class InventoryApplicationService {
     @Transactional
     public void decreaseStock(String productId, int quantity) {
 
+        log.info("DecreaseStock request received productId={}, quantity={}",
+                productId, quantity);
+
         InventoryItem item = repository.findByProductId(productId)
                 .orElseThrow(() -> new ProductNotFoundException(productId));
 
         item.decreaseStock(quantity);
 
         repository.save(item);
+
+        log.info("Stock decreased successfully for productId={}, remainingQuantity={}",
+                item.getProductId(),
+                item.getQuantity());
+    }
+
+    @Transactional
+    public void upsertStock(String productId, String productName, int quantity) {
+
+        log.info("Upsert stock request received productId={}, productName={}, quantity={}",
+                productId, productName, quantity);
+
+        InventoryItem item = repository.findByProductId(productId)
+                .orElse(null);
+
+        if (item == null) {
+            log.info("Creating new inventory item for productId={}", productId);
+
+            InventoryItem newItem = new InventoryItem(
+                    null,
+                    productId,
+                    productName,
+                    quantity
+            );
+
+            repository.save(newItem);
+            return;
+        }
+
+        log.info("Updating existing inventory item for productId={}", productId);
+
+        item.updateFromSync(productName, quantity);
+
+        repository.save(item);
     }
 }
+

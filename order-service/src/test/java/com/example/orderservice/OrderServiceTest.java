@@ -3,12 +3,13 @@ package com.example.orderservice;
 import com.example.inventoryservice.grpc.CheckStockResponse;
 import com.example.inventoryservice.grpc.DecreaseStockResponse;
 import com.example.orderservice.application.service.OrderService;
+import com.example.orderservice.domain.exception.OrderNotFoundException;
 import com.example.orderservice.domain.model.OrderItem;
 import com.example.orderservice.domain.model.OrderItemStatus;
 import com.example.orderservice.domain.model.ProcessedRequest;
 import com.example.orderservice.domain.repository.OrderItemRepository;
 import com.example.orderservice.domain.repository.ProcessedRequestRepository;
-import com.example.orderservice.infastructure.grpc.InventoryGrpcClient;
+import com.example.orderservice.infrastructure.grpc.InventoryGrpcClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -128,5 +129,37 @@ class OrderServiceTest {
         verify(inventoryGrpcClient, never()).checkStock(anyString(), anyInt());
         verify(inventoryGrpcClient, never()).decreaseStock(anyString(), anyInt());
         verify(orderItemRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void shouldReturnOrderWhenOrderExists() {
+        String orderId = "order-1";
+
+        OrderItem order = new OrderItem("iphone-15-pro", 1);
+        order.setId(orderId);
+        order.confirm();
+
+        when(orderItemRepository.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        OrderItem result = orderService.getOrder(orderId);
+
+        assertEquals(orderId, result.getId());
+        assertEquals(OrderItemStatus.COMPLETED, result.getStatus());
+
+        verify(orderItemRepository).findById(orderId);
+    }
+
+    @Test
+    void shouldThrowOrderNotFoundWhenOrderDoesNotExist() {
+        String orderId = "missing-order";
+
+        when(orderItemRepository.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(OrderNotFoundException.class,
+                () -> orderService.getOrder(orderId));
+
+        verify(orderItemRepository).findById(orderId);
     }
 }

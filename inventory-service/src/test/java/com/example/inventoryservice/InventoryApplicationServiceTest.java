@@ -30,7 +30,7 @@ class InventoryApplicationServiceTest {
     @Test
     void shouldReturnInStockWhenEnoughQuantityExists() {
         CheckStockRequestDto request = new CheckStockRequestDto("iphone-15-pro", 2);
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", 10);
+        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 10);
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));
@@ -54,7 +54,7 @@ class InventoryApplicationServiceTest {
 
     @Test
     void shouldDecreaseStockAndSaveItem() {
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", 10);
+        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 10);
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));
@@ -69,11 +69,12 @@ class InventoryApplicationServiceTest {
         InventoryItem savedItem = captor.getValue();
         assertEquals(7, savedItem.getQuantity());
         assertEquals("iphone-15-pro", savedItem.getProductId());
+        assertEquals("iPhone 15 Pro", savedItem.getProductName());
     }
 
     @Test
     void shouldThrowIllegalStateExceptionWhenQuantityIsNotEnough() {
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", 2);
+        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 2);
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));

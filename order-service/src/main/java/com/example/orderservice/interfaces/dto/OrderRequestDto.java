@@ -3,9 +3,15 @@ package com.example.orderservice.interfaces.dto;
 
 import com.example.orderservice.domain.model.OrderItem;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
 public class OrderRequestDto {
 
+    @NotBlank(message = "productId is required")
     private String productId;
+
+    @Min(value = 1, message = "quantity must be greater than 0")
     private int quantity;
 
     public OrderRequestDto() {}
@@ -15,7 +21,6 @@ public class OrderRequestDto {
         this.quantity = quantity;
     }
 
-    // DTO → DOMAIN
     public OrderItem toDomain() {
         return new OrderItem(productId, quantity);
     }
