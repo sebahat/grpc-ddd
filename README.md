@@ -124,8 +124,9 @@ Why both?
 * Exception handling strategy
 * Retry and fallback mechanism
 * Separation of concerns between application, domain, infrastructure and interface layers
+* Aggregate root pattern (Order as aggregate root)
+* Encapsulation of OrderItem within Order aggregate
 
----
 
 ## 🐳 Running the Project
 
@@ -200,25 +201,28 @@ Content-Type: application/json
 ### Response
 
 ```json
-[
-  {
-    "id": "50926899-f1e0-4603-bf42-9af0be83c5ab",
-    "productId": "iphone-15",
-    "quantity": 2,
-    "status": "COMPLETED"
-  }
-]
+{
+  "orderId": "50926899-f1e0-4603-bf42-9af0be83c5ab",
+  "status": "COMPLETED",
+  "items": [
+    {
+      "id": "item-id",
+      "productId": "iphone-15",
+      "quantity": 2,
+      "status": "COMPLETED"
+    }
+  ]
+}
 ```
 
+The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
 
-* Kafka retry and Dead Letter Queue support
-* Distributed tracing with OpenTelemetry
+* Kafka retry and Dead Letter Queue (DLQ) support
+* Explore Saga pattern for distributed consistency between Order and Inventory services
+* Atomic stock reservation to prevent race conditions
 * Kubernetes deployment
-* API Gateway integration
-* Contract testing
-* Order aggregate refactor for stronger DDD modeling
 
 ## 👨‍💻 Author
 
