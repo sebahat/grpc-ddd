@@ -1,5 +1,5 @@
 package com.example.orderservice.infrastructure.persistence.mapper;
-import com.example.orderservice.domain.model.ProcessedRequest;
+import com.example.orderservice.domain.idempotency.ProcessedRequest;
 import com.example.orderservice.infrastructure.persistence.entity.ProcessedRequestEntity;
 
 public class ProcessedRequestMapper {
