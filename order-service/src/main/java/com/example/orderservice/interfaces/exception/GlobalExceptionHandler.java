@@ -1,6 +1,7 @@
 package com.example.orderservice.interfaces.exception;
 
 import com.example.orderservice.domain.exception.OrderNotFoundException;
+import com.example.orderservice.domain.exception.OutOfStockException;
 import com.example.orderservice.domain.exception.ProductNotFoundException;
 import com.example.orderservice.interfaces.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -41,5 +42,12 @@ public class GlobalExceptionHandler {
 
                 .body(new ErrorResponse(ex.getMessage(), 404));
 
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<ErrorResponse> handleOutOfStock(OutOfStockException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), 409));
     }
 }

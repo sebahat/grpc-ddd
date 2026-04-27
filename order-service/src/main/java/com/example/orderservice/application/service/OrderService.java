@@ -1,12 +1,15 @@
 package com.example.orderservice.application.service;
 
 import com.example.orderservice.domain.exception.OrderNotFoundException;
-import com.example.orderservice.domain.model.OrderItem;
-import com.example.orderservice.domain.model.ProcessedRequest;
-import com.example.orderservice.domain.repository.OrderItemRepository;
-import com.example.orderservice.domain.repository.ProcessedRequestRepository;
+import com.example.orderservice.domain.exception.OutOfStockException;
+import com.example.orderservice.domain.idempotency.ProcessedRequest;
+import com.example.orderservice.domain.idempotency.ProcessedRequestRepository;
+import com.example.orderservice.domain.order.Order;
+import com.example.orderservice.domain.order.OrderItem;
+import com.example.orderservice.domain.order.OrderRepository;
 import com.example.orderservice.infrastructure.grpc.InventoryGrpcClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,44 +17,44 @@ import java.util.List;
 @Service
 public class OrderService {
 
-    private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
     private final InventoryGrpcClient inventoryClient;
     private final ProcessedRequestRepository processedRequestRepository;
 
-    public OrderService(OrderItemRepository orderItemRepository,
+    public OrderService(OrderRepository orderRepository,
                         InventoryGrpcClient inventoryClient,
                         ProcessedRequestRepository processedRequestRepository) {
-        this.orderItemRepository = orderItemRepository;
+        this.orderRepository = orderRepository;
         this.inventoryClient = inventoryClient;
         this.processedRequestRepository = processedRequestRepository;
     }
 
-    public List<OrderItem> createOrder(String idempotencyKey, List<OrderItem> items) {
+    @Transactional
+    public Order createOrder(String idempotencyKey, List<OrderItem> items) {
 
         var existing = processedRequestRepository.findByIdempotencyKey(idempotencyKey);
 
         if (existing.isPresent()) {
             String orderId = existing.get().getOrderId();
 
-            return List.of(
-                    orderItemRepository.findById(orderId)
-                            .orElseThrow(() -> new OrderNotFoundException(orderId))
-            );
+            return orderRepository.findById(orderId)
+                    .orElseThrow(() -> new OrderNotFoundException(orderId));
         }
 
         List<OrderItem> processed = items.stream()
                 .map(this::processItem)
                 .toList();
 
-        List<OrderItem> saved = orderItemRepository.saveAll(processed);
+        Order order = new Order(processed);
+        order.evaluateStatus();
 
-        String orderId = saved.get(0).getId();
+        Order saved = orderRepository.save(order);
 
         try {
             processedRequestRepository.save(
                     new ProcessedRequest(
                             idempotencyKey,
-                            orderId,
+                            saved.getId(),
                             LocalDateTime.now()
                     )
             );
@@ -61,10 +64,8 @@ public class OrderService {
             if (alreadyProcessed.isPresent()) {
                 String existingOrderId = alreadyProcessed.get().getOrderId();
 
-                return List.of(
-                        orderItemRepository.findById(existingOrderId)
-                                .orElseThrow(() -> new OrderNotFoundException(existingOrderId))
-                );
+                return orderRepository.findById(existingOrderId)
+                        .orElseThrow(() -> new OrderNotFoundException(existingOrderId));
             }
 
             throw ex;
@@ -81,8 +82,7 @@ public class OrderService {
         );
 
         if (!response.getInStock()) {
-            item.fail();
-            return item;
+            throw new OutOfStockException(item.getProductId());
         }
 
         inventoryClient.decreaseStock(
@@ -94,8 +94,9 @@ public class OrderService {
         return item;
     }
 
-    public OrderItem getOrder(String id) {
-        return orderItemRepository.findById(id)
+    @Transactional(readOnly = true)
+    public Order getOrder(String id) {
+        return orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
     }
 }

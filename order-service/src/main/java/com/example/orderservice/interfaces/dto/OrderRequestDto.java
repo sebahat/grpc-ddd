@@ -1,7 +1,7 @@
 package com.example.orderservice.interfaces.dto;
 
 
-import com.example.orderservice.domain.model.OrderItem;
+import com.example.orderservice.domain.order.OrderItem;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package com.example.orderservice.domain.model;
+package com.example.orderservice.domain.idempotency;
 
 import java.time.LocalDateTime;
 

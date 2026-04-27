@@ -4,11 +4,13 @@ import com.example.inventoryservice.grpc.CheckStockResponse;
 import com.example.inventoryservice.grpc.DecreaseStockResponse;
 import com.example.orderservice.application.service.OrderService;
 import com.example.orderservice.domain.exception.OrderNotFoundException;
-import com.example.orderservice.domain.model.OrderItem;
-import com.example.orderservice.domain.model.OrderItemStatus;
-import com.example.orderservice.domain.model.ProcessedRequest;
-import com.example.orderservice.domain.repository.OrderItemRepository;
-import com.example.orderservice.domain.repository.ProcessedRequestRepository;
+import com.example.orderservice.domain.exception.OutOfStockException;
+import com.example.orderservice.domain.idempotency.ProcessedRequest;
+import com.example.orderservice.domain.idempotency.ProcessedRequestRepository;
+import com.example.orderservice.domain.order.Order;
+import com.example.orderservice.domain.order.OrderItem;
+import com.example.orderservice.domain.order.OrderItemStatus;
+import com.example.orderservice.domain.order.OrderRepository;
 import com.example.orderservice.infrastructure.grpc.InventoryGrpcClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,14 +23,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
     @Mock
-    private OrderItemRepository orderItemRepository;
+    private OrderRepository orderRepository;
 
     @Mock
     private InventoryGrpcClient inventoryGrpcClient;
@@ -58,22 +60,23 @@ class OrderServiceTest {
                         .setSuccess(true)
                         .build());
 
-        when(orderItemRepository.saveAll(any()))
+        when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        List<OrderItem> result = orderService.createOrder(idempotencyKey, List.of(item));
+        Order result = orderService.createOrder(idempotencyKey, List.of(item));
 
-        assertEquals(1, result.size());
-        assertEquals(OrderItemStatus.COMPLETED, result.get(0).getStatus());
+        assertNotNull(result.getId());
+        assertEquals(1, result.getItems().size());
+        assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
 
         verify(inventoryGrpcClient).checkStock("iphone-15-pro", 2);
         verify(inventoryGrpcClient).decreaseStock("iphone-15-pro", 2);
-        verify(orderItemRepository).saveAll(any());
+        verify(orderRepository).save(any(Order.class));
         verify(processedRequestRepository).save(any());
     }
 
     @Test
-    void shouldFailOrderWhenStockIsNotAvailable() {
+    void shouldThrowOutOfStockWhenStockIsNotAvailable() {
         String idempotencyKey = "idem-2";
         OrderItem item = new OrderItem("iphone-15-pro", 2);
 
@@ -86,18 +89,13 @@ class OrderServiceTest {
                         .setAvailableQuantity(0)
                         .build());
 
-        when(orderItemRepository.saveAll(any()))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<OrderItem> result = orderService.createOrder(idempotencyKey, List.of(item));
-
-        assertEquals(1, result.size());
-        assertEquals(OrderItemStatus.FAILED, result.get(0).getStatus());
+        assertThrows(OutOfStockException.class,
+                () -> orderService.createOrder(idempotencyKey, List.of(item)));
 
         verify(inventoryGrpcClient).checkStock("iphone-15-pro", 2);
         verify(inventoryGrpcClient, never()).decreaseStock(anyString(), anyInt());
-        verify(orderItemRepository).saveAll(any());
-        verify(processedRequestRepository).save(any());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(processedRequestRepository, never()).save(any());
     }
 
     @Test
@@ -105,61 +103,68 @@ class OrderServiceTest {
         String idempotencyKey = "idem-3";
         String existingOrderId = "order-123";
 
-        OrderItem existingOrder = new OrderItem("iphone-15-pro", 1);
+        OrderItem item = new OrderItem("iphone-15-pro", 1);
+        item.confirm();
+
+        Order existingOrder = new Order(List.of(item));
         existingOrder.setId(existingOrderId);
-        existingOrder.confirm();
+        existingOrder.evaluateStatus();
 
         when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
                 .thenReturn(Optional.of(
                         new ProcessedRequest(idempotencyKey, existingOrderId, LocalDateTime.now())
                 ));
 
-        when(orderItemRepository.findById(existingOrderId))
+        when(orderRepository.findById(existingOrderId))
                 .thenReturn(Optional.of(existingOrder));
 
-        List<OrderItem> result = orderService.createOrder(
+        Order result = orderService.createOrder(
                 idempotencyKey,
                 List.of(new OrderItem("iphone-15-pro", 1))
         );
 
-        assertEquals(1, result.size());
-        assertEquals(existingOrderId, result.get(0).getId());
-        assertEquals(OrderItemStatus.COMPLETED, result.get(0).getStatus());
+        assertEquals(existingOrderId, result.getId());
+        assertEquals(1, result.getItems().size());
+        assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
 
         verify(inventoryGrpcClient, never()).checkStock(anyString(), anyInt());
         verify(inventoryGrpcClient, never()).decreaseStock(anyString(), anyInt());
-        verify(orderItemRepository, never()).saveAll(any());
+        verify(orderRepository, never()).save(any(Order.class));
     }
 
     @Test
     void shouldReturnOrderWhenOrderExists() {
         String orderId = "order-1";
 
-        OrderItem order = new OrderItem("iphone-15-pro", 1);
-        order.setId(orderId);
-        order.confirm();
+        OrderItem item = new OrderItem("iphone-15-pro", 1);
+        item.confirm();
 
-        when(orderItemRepository.findById(orderId))
+        Order order = new Order(List.of(item));
+        order.setId(orderId);
+        order.evaluateStatus();
+
+        when(orderRepository.findById(orderId))
                 .thenReturn(Optional.of(order));
 
-        OrderItem result = orderService.getOrder(orderId);
+        Order result = orderService.getOrder(orderId);
 
         assertEquals(orderId, result.getId());
-        assertEquals(OrderItemStatus.COMPLETED, result.getStatus());
+        assertEquals(1, result.getItems().size());
+        assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
 
-        verify(orderItemRepository).findById(orderId);
+        verify(orderRepository).findById(orderId);
     }
 
     @Test
     void shouldThrowOrderNotFoundWhenOrderDoesNotExist() {
         String orderId = "missing-order";
 
-        when(orderItemRepository.findById(orderId))
+        when(orderRepository.findById(orderId))
                 .thenReturn(Optional.empty());
 
         assertThrows(OrderNotFoundException.class,
                 () -> orderService.getOrder(orderId));
 
-        verify(orderItemRepository).findById(orderId);
+        verify(orderRepository).findById(orderId);
     }
 }

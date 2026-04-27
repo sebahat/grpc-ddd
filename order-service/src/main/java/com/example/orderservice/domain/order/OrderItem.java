@@ -1,10 +1,11 @@
-package com.example.orderservice.domain.model;
+package com.example.orderservice.domain.order;
 
 import java.util.UUID;
 
 public class OrderItem {
 
     private String id;
+    private String orderId;
     private String productId;
     private int quantity;
     private OrderItemStatus status;
@@ -37,6 +38,10 @@ public class OrderItem {
         return id;
     }
 
+    public String getOrderId() {
+        return orderId;
+    }
+
     public String getProductId() {
         return productId;
     }
@@ -51,5 +56,9 @@ public class OrderItem {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 }
