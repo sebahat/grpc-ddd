@@ -228,8 +228,7 @@ Content-Type: application/json
 The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
-
-* Explore Saga pattern for distributed consistency between Order and Inventory services
+** Explore Saga pattern for coordinating distributed transactions between services
 * Atomic stock reservation to prevent race conditions
 * Kubernetes deployment
 
