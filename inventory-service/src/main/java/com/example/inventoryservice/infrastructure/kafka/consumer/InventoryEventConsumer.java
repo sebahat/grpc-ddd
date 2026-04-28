@@ -30,36 +30,24 @@ public class InventoryEventConsumer {
     )
     public void consume(InventorySyncEvent event) {
 
-        try {
-            validator.validate(event);
-
-            if (event.getEventType() != EventType.STOCK_UPDATED) {
-                log.warn("Unsupported eventType={}, ignoring event", event.getEventType());
-                return;
-            }
-
-            log.info("Kafka event received eventType={}, productId={}, quantity={}",
-                    event.getEventType(),
-                    event.getProductId(),
-                    event.getQuantity());
-
-            applicationService.upsertStock(
-                    event.getProductId(),
-                    event.getProductName(),
-                    event.getQuantity()
-            );
-
-            log.info("Kafka event processed successfully for productId={}",
-                    event.getProductId());
-
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid Kafka event for productId={}, reason={}",
-                    event != null ? event.getProductId() : null,
-                    e.getMessage());
-        } catch (Exception e) {
-            log.error("Failed to process Kafka event for productId={}",
-                    event != null ? event.getProductId() : null,
-                    e);
+        validator.validate(event);
+        if (event.getEventType() != EventType.STOCK_UPDATED) {
+            log.warn("Unsupported eventType={}, ignoring event", event.getEventType());
+            return;
         }
+
+        log.info("Kafka event received eventType={}, productId={}, quantity={}",
+                event.getEventType(),
+                event.getProductId(),
+                event.getQuantity());
+
+        applicationService.upsertStock(
+                event.getProductId(),
+                event.getProductName(),
+                event.getQuantity()
+        );
+
+        log.info("Kafka event processed successfully for productId={}",
+                event.getProductId());
     }
 }

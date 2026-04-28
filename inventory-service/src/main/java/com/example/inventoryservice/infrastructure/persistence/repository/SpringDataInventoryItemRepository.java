@@ -6,15 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 
 import java.util.Optional;
-/**
- * Spring Data JPA tarafından otomatik implement edilecek arayüz.
- */
 
-
-/**
- * Sadece DB (Entity) bilir.
- * Domain ile hiçbir ilişkisi yok.
- */
 public interface SpringDataInventoryItemRepository
         extends JpaRepository<InventoryEntity, Long> {
 
