@@ -76,19 +76,14 @@ public class OrderService {
 
     private OrderItem processItem(OrderItem item) {
 
-        var response = inventoryClient.checkStock(
+        boolean reserved = inventoryClient.reserveStock(
                 item.getProductId(),
                 item.getQuantity()
         );
 
-        if (!response.getInStock()) {
+        if (!reserved) {
             throw new OutOfStockException(item.getProductId());
         }
-
-        inventoryClient.decreaseStock(
-                item.getProductId(),
-                item.getQuantity()
-        );
 
         item.confirm();
         return item;

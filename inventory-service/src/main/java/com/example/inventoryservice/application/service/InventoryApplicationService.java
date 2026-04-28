@@ -95,5 +95,22 @@ public class InventoryApplicationService {
 
         repository.save(item);
     }
+
+    @Transactional
+    public void reserveStock(String productId, int quantity) {
+
+        log.info("ReserveStock request received productId={}, quantity={}",
+                productId, quantity);
+
+        int updatedRows = repository.reserveStock(productId, quantity);
+
+        if (updatedRows == 0) {
+            log.warn("Stock reservation failed productId={}, quantity={}",
+                    productId, quantity);
+            throw new IllegalStateException("not enough stock");
+        }
+
+        log.info("Stock reserved successfully for productId={}", productId);
+    }
 }
 

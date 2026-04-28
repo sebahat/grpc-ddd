@@ -1,7 +1,5 @@
 package com.example.orderservice;
 
-import com.example.inventoryservice.grpc.CheckStockResponse;
-import com.example.inventoryservice.grpc.DecreaseStockResponse;
 import com.example.orderservice.application.service.OrderService;
 import com.example.orderservice.domain.exception.OrderNotFoundException;
 import com.example.orderservice.domain.exception.OutOfStockException;
@@ -42,23 +40,15 @@ class OrderServiceTest {
     private OrderService orderService;
 
     @Test
-    void shouldCreateCompletedOrderWhenStockIsAvailable() {
+    void shouldCreateCompletedOrderWhenStockIsReserved() {
         String idempotencyKey = "idem-1";
         OrderItem item = new OrderItem("iphone-15-pro", 2);
 
         when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
                 .thenReturn(Optional.empty());
 
-        when(inventoryGrpcClient.checkStock("iphone-15-pro", 2))
-                .thenReturn(CheckStockResponse.newBuilder()
-                        .setInStock(true)
-                        .setAvailableQuantity(10)
-                        .build());
-
-        when(inventoryGrpcClient.decreaseStock("iphone-15-pro", 2))
-                .thenReturn(DecreaseStockResponse.newBuilder()
-                        .setSuccess(true)
-                        .build());
+        when(inventoryGrpcClient.reserveStock("iphone-15-pro", 2))
+                .thenReturn(true);
 
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -69,31 +59,26 @@ class OrderServiceTest {
         assertEquals(1, result.getItems().size());
         assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
 
-        verify(inventoryGrpcClient).checkStock("iphone-15-pro", 2);
-        verify(inventoryGrpcClient).decreaseStock("iphone-15-pro", 2);
+        verify(inventoryGrpcClient).reserveStock("iphone-15-pro", 2);
         verify(orderRepository).save(any(Order.class));
         verify(processedRequestRepository).save(any());
     }
 
     @Test
-    void shouldThrowOutOfStockWhenStockIsNotAvailable() {
+    void shouldThrowOutOfStockWhenStockCannotBeReserved() {
         String idempotencyKey = "idem-2";
         OrderItem item = new OrderItem("iphone-15-pro", 2);
 
         when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
                 .thenReturn(Optional.empty());
 
-        when(inventoryGrpcClient.checkStock("iphone-15-pro", 2))
-                .thenReturn(CheckStockResponse.newBuilder()
-                        .setInStock(false)
-                        .setAvailableQuantity(0)
-                        .build());
+        when(inventoryGrpcClient.reserveStock("iphone-15-pro", 2))
+                .thenReturn(false);
 
         assertThrows(OutOfStockException.class,
                 () -> orderService.createOrder(idempotencyKey, List.of(item)));
 
-        verify(inventoryGrpcClient).checkStock("iphone-15-pro", 2);
-        verify(inventoryGrpcClient, never()).decreaseStock(anyString(), anyInt());
+        verify(inventoryGrpcClient).reserveStock("iphone-15-pro", 2);
         verify(orderRepository, never()).save(any(Order.class));
         verify(processedRequestRepository, never()).save(any());
     }
@@ -127,8 +112,7 @@ class OrderServiceTest {
         assertEquals(1, result.getItems().size());
         assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
 
-        verify(inventoryGrpcClient, never()).checkStock(anyString(), anyInt());
-        verify(inventoryGrpcClient, never()).decreaseStock(anyString(), anyInt());
+        verify(inventoryGrpcClient, never()).reserveStock(anyString(), anyInt());
         verify(orderRepository, never()).save(any(Order.class));
     }
 
