@@ -1,5 +1,14 @@
 # 🧩 Distributed Order & Inventory System (gRPC + Kafka + DDD)
 
+## ✨ Highlights
+
+- Implemented Kafka Dead Letter Queue (DLQ) for failure handling
+- Designed hybrid communication using gRPC and Kafka
+- Applied Domain-Driven Design (DDD) principles
+- Built idempotent order processing
+- Introduced retry and fallback mechanisms
+- Planned atomic stock handling to prevent race conditions
+
 This project demonstrates a distributed microservices architecture using Spring Boot, gRPC, and Kafka, designed with Domain-Driven Design (DDD) principles.
 
 It simulates a real-world e-commerce backend where order processing and inventory management are handled via both synchronous (gRPC) and asynchronous (event-driven) communication.
@@ -99,15 +108,15 @@ External Request → Inventory Sync Service
 
 Why gRPC?
 
-* Efficient binary protocol
-* Strongly typed contracts with Protocol Buffers
-* Suitable for internal service-to-service communication
+* High-performance binary communication
+* Strongly typed contracts using Protocol Buffers
+* Ideal for synchronous, low-latency service-to-service calls
 
 Why Kafka?
 
-* Decoupled communication
-* Scalable event processing
-* Supports eventual consistency
+* Decoupled, event-driven communication
+* Scalable and resilient message processing
+* Enables eventual consistency with failure handling (DLQ)
 
 Why both?
 
@@ -117,6 +126,7 @@ Why both?
 
 ## ⚙️ Key Concepts Implemented
 
+* Kafka Dead Letter Queue (DLQ) for failure handling
 * Domain-Driven Design style layering
 * Event-driven architecture
 * Idempotent request handling
@@ -219,7 +229,6 @@ The response represents the Order aggregate, which contains OrderItems as intern
 
 ## 📌 Future Improvements
 
-* Kafka retry and Dead Letter Queue (DLQ) support
 * Explore Saga pattern for distributed consistency between Order and Inventory services
 * Atomic stock reservation to prevent race conditions
 * Kubernetes deployment
