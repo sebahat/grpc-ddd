@@ -36,7 +36,7 @@ public class OrderController {
 
     @Operation(
             summary = "Create order",
-            description = "Creates an order after checking stock availability through Inventory Service via gRPC."
+            description = "Creates an order by atomically reserving stock via Inventory Service using gRPC, ensuring no race conditions."
     )
     @ApiResponses(value = {
             @ApiResponse(

@@ -10,4 +10,5 @@ public interface InventoryItemRepository {
     Optional<InventoryItem> findByProductId(String productId);
     InventoryItem save(InventoryItem item);
 
+    int reserveStock(String productId, int quantity);
 }

@@ -37,4 +37,9 @@ public class JpaInventoryItemRepository implements InventoryItemRepository {
         InventoryEntity saved = springRepo.save(entity);
         return InventoryMapper.toDomain(saved);
     }
+
+    @Override
+    public int reserveStock(String productId, int quantity) {
+        return springRepo.reserveStock(productId, quantity);
+    }
 }

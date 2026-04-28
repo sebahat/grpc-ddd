@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.inventoryservice.grpc.DecreaseStockRequest;
 import com.example.inventoryservice.grpc.DecreaseStockResponse;
+import com.example.inventoryservice.grpc.ReserveStockRequest;
+import com.example.inventoryservice.grpc.ReserveStockResponse;
 
 import com.example.inventoryservice.application.validation.CheckStockValidator;
 
@@ -71,6 +73,27 @@ public class InventoryServiceImpl extends InventoryServiceGrpc.InventoryServiceI
         );
 
         DecreaseStockResponse response = DecreaseStockResponse.newBuilder()
+                .setSuccess(true)
+                .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+    @Override
+    public void reserveStock(ReserveStockRequest request,
+                             StreamObserver<ReserveStockResponse> responseObserver) {
+
+        CheckStockValidator.validate(
+                request.getProductId(),
+                request.getQuantity()
+        );
+
+        applicationService.reserveStock(
+                request.getProductId(),
+                request.getQuantity()
+        );
+
+        ReserveStockResponse response = ReserveStockResponse.newBuilder()
                 .setSuccess(true)
                 .build();
 

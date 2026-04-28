@@ -84,4 +84,25 @@ class InventoryApplicationServiceTest {
 
         verify(repository, never()).save(any());
     }
+
+    @Test
+    void shouldReserveStockSuccessfullyWhenEnoughQuantityExists() {
+        when(repository.reserveStock("iphone-15-pro", 3))
+                .thenReturn(1);
+
+        inventoryApplicationService.reserveStock("iphone-15-pro", 3);
+
+        verify(repository).reserveStock("iphone-15-pro", 3);
+    }
+
+    @Test
+    void shouldThrowIllegalStateExceptionWhenReserveStockFails() {
+        when(repository.reserveStock("iphone-15-pro", 5))
+                .thenReturn(0);
+
+        assertThrows(IllegalStateException.class,
+                () -> inventoryApplicationService.reserveStock("iphone-15-pro", 5));
+
+        verify(repository).reserveStock("iphone-15-pro", 5);
+    }
 }

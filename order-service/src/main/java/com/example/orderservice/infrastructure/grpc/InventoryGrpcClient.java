@@ -1,10 +1,8 @@
 package com.example.orderservice.infrastructure.grpc;
 
-import com.example.inventoryservice.grpc.CheckStockRequest;
-import com.example.inventoryservice.grpc.CheckStockResponse;
-import com.example.inventoryservice.grpc.DecreaseStockRequest;
-import com.example.inventoryservice.grpc.DecreaseStockResponse;
 import com.example.inventoryservice.grpc.InventoryServiceGrpc;
+import com.example.inventoryservice.grpc.ReserveStockRequest;
+import com.example.inventoryservice.grpc.ReserveStockResponse;
 import com.example.orderservice.domain.exception.ProductNotFoundException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -20,20 +18,22 @@ public class InventoryGrpcClient {
 
     @GrpcClient("inventory-service")
     private InventoryServiceGrpc.InventoryServiceBlockingStub stub;
+    @Retry(name = "inventoryRetry", fallbackMethod = "fallbackReserveStock")
+    @CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "fallbackReserveStock")
+    public boolean reserveStock(String productId, int qty) {
 
-    @Retry(name = "inventoryRetry", fallbackMethod = "fallbackCheckStock")
-    @CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "fallbackCheckStock")
-    public CheckStockResponse checkStock(String productId, int qty) {
-
-        CheckStockRequest request = CheckStockRequest.newBuilder()
+        ReserveStockRequest request = ReserveStockRequest.newBuilder()
                 .setProductId(productId)
-                .setRequestedQuantity(qty)
+                .setQuantity(qty)
                 .build();
 
         try {
-            return stub
+            ReserveStockResponse response = stub
                     .withDeadlineAfter(2, TimeUnit.SECONDS)
-                    .checkStock(request);
+                    .reserveStock(request);
+
+            return response.getSuccess();
+
         } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 throw new ProductNotFoundException(productId);
@@ -43,26 +43,13 @@ public class InventoryGrpcClient {
         }
     }
 
-    public DecreaseStockResponse decreaseStock(String productId, int qty) {
 
-        DecreaseStockRequest request = DecreaseStockRequest.newBuilder()
-                .setProductId(productId)
-                .setQuantity(qty)
-                .build();
-
-        return stub
-                .withDeadlineAfter(2, TimeUnit.SECONDS)
-                .decreaseStock(request);
-    }
-
-    private CheckStockResponse fallbackCheckStock(String productId, int qty, Throwable ex) {
+    private boolean fallbackReserveStock(String productId, int qty, Throwable ex) {
         if (ex instanceof ProductNotFoundException) {
             throw (ProductNotFoundException) ex;
         }
 
-        return CheckStockResponse.newBuilder()
-                .setInStock(false)
-                .setAvailableQuantity(0)
-                .build();
+        return false;
     }
+
 }
