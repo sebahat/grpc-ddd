@@ -7,7 +7,7 @@
 - Applied Domain-Driven Design (DDD) principles
 - Built idempotent order processing
 - Introduced retry and fallback mechanisms
-- Planned atomic stock handling to prevent race conditions
+- Implemented atomic stock reservation to prevent race conditions
 
 This project demonstrates a distributed microservices architecture using Spring Boot, gRPC, and Kafka, designed with Domain-Driven Design (DDD) principles.
 
@@ -56,7 +56,7 @@ Responsible for:
 
 * Creating orders
 * Checking stock via gRPC
-* Decreasing inventory
+* Reserving stock via atomic operation
 * Handling idempotent requests
 
 Key features:
@@ -122,6 +122,25 @@ Why both?
 
 * gRPC is used for real-time order placement flow.
 * Kafka is used for asynchronous stock synchronization.
+
+
+### Why Atomic Stock Reservation?
+
+To prevent race conditions under high concurrency, stock reservation is handled atomically at the database level.
+
+This ensures:
+
+- No overselling
+- Thread-safe updates
+- Consistent inventory state
+
+### Result
+
+- 10 concurrent requests against stock=5  
+- 5 succeeded, 5 failed  
+- Final stock = 0  
+
+Implementation can be found in the Inventory Service repository layer.
 
 
 ## ⚙️ Key Concepts Implemented
@@ -228,8 +247,7 @@ Content-Type: application/json
 The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
-** Explore Saga pattern for coordinating distributed transactions between services
-* Atomic stock reservation to prevent race conditions
+* Explore Saga pattern for coordinating distributed transactions between services
 * Kubernetes deployment
 
 ## 👨‍💻 Author
