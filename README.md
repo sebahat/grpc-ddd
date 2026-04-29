@@ -1,4 +1,4 @@
-# 🧩 Distributed Order & Inventory System (gRPC + Kafka + DDD)
+# 🧩 Distributed Order & Inventory System (gRPC + Kafka + Kubernetes + DDD)
 
 ## ✨ Highlights
 
@@ -190,6 +190,40 @@ docker compose up --build
 * Inventory Service gRPC: localhost:9090
 * Kafka: localhost:29092
 
+---
+## ☸️ Kubernetes Deployment
+
+The system is fully deployed on Kubernetes using Docker Desktop Kubernetes.
+
+### Deployed Components
+
+- Order Service
+- Inventory Service
+- Inventory Sync Service
+- Kafka
+- Zookeeper
+- PostgreSQL (separate instance per service)
+
+### Key Capabilities
+
+- Service-to-service communication via gRPC
+- Event-driven communication via Kafka
+- Kubernetes DNS-based service discovery
+- Environment-based configuration override
+- Atomic stock reservation validated under Kubernetes
+
+### Running on Kubernetes
+
+```bash
+kubectl apply -f k8s/
+```
+
+### Verification
+
+- Swagger UI: http://localhost:9092/swagger-ui/index.html
+- Inventory Sync Health: http://localhost:9093/api/inventory-events/ping
+
+
 
 ## 📘 API Documentation
 
@@ -248,7 +282,7 @@ The response represents the Order aggregate, which contains OrderItems as intern
 
 ## 📌 Future Improvements
 * Explore Saga pattern for coordinating distributed transactions between services
-* Kubernetes deployment
+
 
 ## 👨‍💻 Author
 
