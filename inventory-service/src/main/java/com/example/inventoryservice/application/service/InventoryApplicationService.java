@@ -67,31 +67,47 @@ public class InventoryApplicationService {
     }
 
     @Transactional
-    public void upsertStock(String productId, String productName, int quantity) {
+    public void upsertStock(String productId, String productName, int quantity, Long version) {
 
-        log.info("Upsert stock request received productId={}, productName={}, quantity={}",
-                productId, productName, quantity);
+        log.info("Upsert stock request received productId={}, productName={}, quantity={}, version={}",
+                productId, productName, quantity, version);
 
         InventoryItem item = repository.findByProductId(productId)
                 .orElse(null);
 
         if (item == null) {
-            log.info("Creating new inventory item for productId={}", productId);
+            log.info("Creating new inventory item for productId={}, version={}",
+                    productId, version);
 
             InventoryItem newItem = new InventoryItem(
                     null,
                     productId,
                     productName,
-                    quantity
+                    quantity,
+                    version
             );
 
             repository.save(newItem);
             return;
         }
 
-        log.info("Updating existing inventory item for productId={}", productId);
+        if (item.getLastEventVersion() != null &&
+                version <= item.getLastEventVersion()) {
 
-        item.updateFromSync(productName, quantity);
+            log.info("Ignoring old or duplicate inventory event productId={}, incomingVersion={}, currentVersion={}",
+                    productId,
+                    version,
+                    item.getLastEventVersion());
+
+            return;
+        }
+
+        log.info("Updating existing inventory item productId={}, oldVersion={}, newVersion={}",
+                productId,
+                item.getLastEventVersion(),
+                version);
+
+        item.updateFromSync(productName, quantity, version);
 
         repository.save(item);
     }
@@ -113,4 +129,3 @@ public class InventoryApplicationService {
         log.info("Stock reserved successfully for productId={}", productId);
     }
 }
-

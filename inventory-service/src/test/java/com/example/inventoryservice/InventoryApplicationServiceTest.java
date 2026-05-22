@@ -30,12 +30,19 @@ class InventoryApplicationServiceTest {
     @Test
     void shouldReturnInStockWhenEnoughQuantityExists() {
         CheckStockRequestDto request = new CheckStockRequestDto("iphone-15-pro", 2);
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 10);
+        InventoryItem item = new InventoryItem(
+                1L,
+                "iphone-15-pro",
+                "iPhone 15 Pro",
+                10,
+                null
+        );
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));
 
-        CheckStockResponseDto response = inventoryApplicationService.checkStock(request);
+        CheckStockResponseDto response =
+                inventoryApplicationService.checkStock(request);
 
         assertTrue(response.inStock());
         assertEquals(10, response.availableQuantity());
@@ -43,30 +50,43 @@ class InventoryApplicationServiceTest {
 
     @Test
     void shouldThrowProductNotFoundWhenItemDoesNotExist() {
-        CheckStockRequestDto request = new CheckStockRequestDto("missing-product", 1);
+        CheckStockRequestDto request =
+                new CheckStockRequestDto("missing-product", 1);
 
         when(repository.findByProductId("missing-product"))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ProductNotFoundException.class,
-                () -> inventoryApplicationService.checkStock(request));
+        assertThrows(
+                ProductNotFoundException.class,
+                () -> inventoryApplicationService.checkStock(request)
+        );
     }
 
     @Test
     void shouldDecreaseStockAndSaveItem() {
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 10);
+        InventoryItem item = new InventoryItem(
+                1L,
+                "iphone-15-pro",
+                "iPhone 15 Pro",
+                10,
+                null
+        );
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));
+
         when(repository.save(any(InventoryItem.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         inventoryApplicationService.decreaseStock("iphone-15-pro", 3);
 
-        ArgumentCaptor<InventoryItem> captor = ArgumentCaptor.forClass(InventoryItem.class);
+        ArgumentCaptor<InventoryItem> captor =
+                ArgumentCaptor.forClass(InventoryItem.class);
+
         verify(repository).save(captor.capture());
 
         InventoryItem savedItem = captor.getValue();
+
         assertEquals(7, savedItem.getQuantity());
         assertEquals("iphone-15-pro", savedItem.getProductId());
         assertEquals("iPhone 15 Pro", savedItem.getProductName());
@@ -74,13 +94,24 @@ class InventoryApplicationServiceTest {
 
     @Test
     void shouldThrowIllegalStateExceptionWhenQuantityIsNotEnough() {
-        InventoryItem item = new InventoryItem(1L, "iphone-15-pro", "iPhone 15 Pro", 2);
+        InventoryItem item = new InventoryItem(
+                1L,
+                "iphone-15-pro",
+                "iPhone 15 Pro",
+                2,
+                null
+        );
 
         when(repository.findByProductId("iphone-15-pro"))
                 .thenReturn(Optional.of(item));
 
-        assertThrows(IllegalStateException.class,
-                () -> inventoryApplicationService.decreaseStock("iphone-15-pro", 5));
+        assertThrows(
+                IllegalStateException.class,
+                () -> inventoryApplicationService.decreaseStock(
+                        "iphone-15-pro",
+                        5
+                )
+        );
 
         verify(repository, never()).save(any());
     }
@@ -92,7 +123,8 @@ class InventoryApplicationServiceTest {
 
         inventoryApplicationService.reserveStock("iphone-15-pro", 3);
 
-        verify(repository).reserveStock("iphone-15-pro", 3);
+        verify(repository)
+                .reserveStock("iphone-15-pro", 3);
     }
 
     @Test
@@ -100,9 +132,15 @@ class InventoryApplicationServiceTest {
         when(repository.reserveStock("iphone-15-pro", 5))
                 .thenReturn(0);
 
-        assertThrows(IllegalStateException.class,
-                () -> inventoryApplicationService.reserveStock("iphone-15-pro", 5));
+        assertThrows(
+                IllegalStateException.class,
+                () -> inventoryApplicationService.reserveStock(
+                        "iphone-15-pro",
+                        5
+                )
+        );
 
-        verify(repository).reserveStock("iphone-15-pro", 5);
+        verify(repository)
+                .reserveStock("iphone-15-pro", 5);
     }
 }

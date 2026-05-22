@@ -6,12 +6,20 @@ public class InventoryItem {
     private String productId;
     private String productName;
     private int quantity;
+    private Long lastEventVersion;
 
-    public InventoryItem(Long id, String productId, String productName, int quantity) {
+    public InventoryItem(
+            Long id,
+            String productId,
+            String productName,
+            int quantity,
+            Long lastEventVersion
+    ) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
+        this.lastEventVersion = lastEventVersion;
     }
 
     public boolean isInStock(int requestedQuantity) {
@@ -30,9 +38,14 @@ public class InventoryItem {
         quantity -= amount;
     }
 
-    public void updateFromSync(String productName, int quantity) {
+    public void updateFromSync(
+            String productName,
+            int quantity,
+            Long version
+    ) {
         this.productName = productName;
         this.quantity = quantity;
+        this.lastEventVersion = version;
     }
 
     public Long getId() {
@@ -49,5 +62,9 @@ public class InventoryItem {
 
     public int getQuantity() {
         return quantity;
+    }
+
+    public Long getLastEventVersion() {
+        return lastEventVersion;
     }
 }

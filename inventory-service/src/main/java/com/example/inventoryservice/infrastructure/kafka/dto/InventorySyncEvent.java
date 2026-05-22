@@ -2,12 +2,22 @@ package com.example.inventoryservice.infrastructure.kafka.dto;
 
 public class InventorySyncEvent {
 
+    private String eventId;
     private EventType eventType;
     private String productId;
     private String productName;
     private Integer quantity;
+    private Long version;
 
     public InventorySyncEvent() {
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public EventType getEventType() {
@@ -40,5 +50,13 @@ public class InventorySyncEvent {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }
