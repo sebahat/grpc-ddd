@@ -6,6 +6,8 @@
 - Designed hybrid communication using gRPC and Kafka
 - Applied Domain-Driven Design (DDD) principles
 - Built idempotent order processing
+- Implemented Kafka event idempotency using eventId tracking
+- Added version-based stale event protection for inventory sync events
 - Introduced retry and fallback mechanisms
 - Implemented atomic stock reservation to prevent race conditions
 
@@ -79,6 +81,8 @@ Key features:
 
 * gRPC server implementation
 * Kafka consumer
+* Kafka event idempotency with processed event tracking
+* Version-based stale event protection
 * Validation layer
 * Persistence with JPA
 
@@ -116,7 +120,9 @@ Why Kafka?
 
 * Decoupled, event-driven communication
 * Scalable and resilient message processing
-* Enables eventual consistency with failure handling (DLQ)
+* Supports resilient at-least-once event consumption
+* Event idempotency protection using unique eventId tracking
+* Version-based stale event protection for inventory synchronization
 
 Why both?
 
@@ -149,6 +155,8 @@ Implementation can be found in the Inventory Service repository layer.
 * Domain-Driven Design style layering
 * Event-driven architecture
 * Idempotent request handling
+* Kafka event idempotency using eventId
+* Version-based stale event protection
 * Validation layer
 * Exception handling strategy
 * Retry and fallback mechanism
@@ -281,8 +289,8 @@ Content-Type: application/json
 The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
-* Explore Saga pattern for coordinating distributed transactions between services
-
+* Add cache-based idempotency support for request handling
+* Add authentication and JWT-based user context
 
 ## 👨‍💻 Author
 
