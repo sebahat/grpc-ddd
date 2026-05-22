@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS processed_events;
 DROP TABLE IF EXISTS inventory_items;
 
 CREATE TABLE inventory_items (
@@ -9,7 +8,3 @@ CREATE TABLE inventory_items (
     last_event_version BIGINT
 );
 
-CREATE TABLE processed_events (
-    id BIGSERIAL PRIMARY KEY,
-    event_id VARCHAR(255) NOT NULL UNIQUE
-);
