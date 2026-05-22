@@ -3,8 +3,9 @@ package com.example.orderservice;
 import com.example.orderservice.application.service.OrderService;
 import com.example.orderservice.domain.exception.OrderNotFoundException;
 import com.example.orderservice.domain.exception.OutOfStockException;
-import com.example.orderservice.domain.idempotency.ProcessedRequest;
-import com.example.orderservice.domain.idempotency.ProcessedRequestRepository;
+import com.example.orderservice.domain.idempotency.cache.IdempotencyCacheEntry;
+import com.example.orderservice.domain.idempotency.cache.IdempotencyCacheStore;
+import com.example.orderservice.domain.idempotency.cache.IdempotencyStatus;
 import com.example.orderservice.domain.order.Order;
 import com.example.orderservice.domain.order.OrderItem;
 import com.example.orderservice.domain.order.OrderItemStatus;
@@ -16,7 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ class OrderServiceTest {
     private InventoryGrpcClient inventoryGrpcClient;
 
     @Mock
-    private ProcessedRequestRepository processedRequestRepository;
+    private IdempotencyCacheStore idempotencyCacheStore;
 
     @InjectMocks
     private OrderService orderService;
@@ -42,10 +43,15 @@ class OrderServiceTest {
     @Test
     void shouldCreateCompletedOrderWhenStockIsReserved() {
         String idempotencyKey = "idem-1";
+        String redisKey = "idempotency:orders:" + idempotencyKey;
+
         OrderItem item = new OrderItem("iphone-15-pro", 2);
 
-        when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
+        when(idempotencyCacheStore.get(redisKey))
                 .thenReturn(Optional.empty());
+
+        when(idempotencyCacheStore.putInProgressIfAbsent(eq(redisKey), any(Duration.class)))
+                .thenReturn(true);
 
         when(inventoryGrpcClient.reserveStock("iphone-15-pro", 2))
                 .thenReturn(true);
@@ -61,31 +67,45 @@ class OrderServiceTest {
 
         verify(inventoryGrpcClient).reserveStock("iphone-15-pro", 2);
         verify(orderRepository).save(any(Order.class));
-        verify(processedRequestRepository).save(any());
+        verify(idempotencyCacheStore).markCompleted(
+                eq(redisKey),
+                eq(result.getId()),
+                any(Duration.class)
+        );
     }
 
     @Test
     void shouldThrowOutOfStockWhenStockCannotBeReserved() {
         String idempotencyKey = "idem-2";
+        String redisKey = "idempotency:orders:" + idempotencyKey;
+
         OrderItem item = new OrderItem("iphone-15-pro", 2);
 
-        when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
+        when(idempotencyCacheStore.get(redisKey))
                 .thenReturn(Optional.empty());
+
+        when(idempotencyCacheStore.putInProgressIfAbsent(eq(redisKey), any(Duration.class)))
+                .thenReturn(true);
 
         when(inventoryGrpcClient.reserveStock("iphone-15-pro", 2))
                 .thenReturn(false);
 
-        assertThrows(OutOfStockException.class,
-                () -> orderService.createOrder(idempotencyKey, List.of(item)));
+        assertThrows(
+                OutOfStockException.class,
+                () -> orderService.createOrder(idempotencyKey, List.of(item))
+        );
 
         verify(inventoryGrpcClient).reserveStock("iphone-15-pro", 2);
         verify(orderRepository, never()).save(any(Order.class));
-        verify(processedRequestRepository, never()).save(any());
+        verify(idempotencyCacheStore).remove(redisKey);
+        verify(idempotencyCacheStore, never())
+                .markCompleted(anyString(), anyString(), any(Duration.class));
     }
 
     @Test
-    void shouldReturnExistingOrderWhenIdempotencyKeyAlreadyProcessed() {
+    void shouldReturnExistingOrderWhenIdempotencyKeyAlreadyCompleted() {
         String idempotencyKey = "idem-3";
+        String redisKey = "idempotency:orders:" + idempotencyKey;
         String existingOrderId = "order-123";
 
         OrderItem item = new OrderItem("iphone-15-pro", 1);
@@ -95,9 +115,9 @@ class OrderServiceTest {
         existingOrder.setId(existingOrderId);
         existingOrder.evaluateStatus();
 
-        when(processedRequestRepository.findByIdempotencyKey(idempotencyKey))
+        when(idempotencyCacheStore.get(redisKey))
                 .thenReturn(Optional.of(
-                        new ProcessedRequest(idempotencyKey, existingOrderId, LocalDateTime.now())
+                        new IdempotencyCacheEntry(existingOrderId, IdempotencyStatus.COMPLETED)
                 ));
 
         when(orderRepository.findById(existingOrderId))
@@ -111,6 +131,28 @@ class OrderServiceTest {
         assertEquals(existingOrderId, result.getId());
         assertEquals(1, result.getItems().size());
         assertEquals(OrderItemStatus.COMPLETED, result.getItems().get(0).getStatus());
+
+        verify(inventoryGrpcClient, never()).reserveStock(anyString(), anyInt());
+        verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void shouldThrowIllegalStateExceptionWhenRequestIsInProgress() {
+        String idempotencyKey = "idem-4";
+        String redisKey = "idempotency:orders:" + idempotencyKey;
+
+        when(idempotencyCacheStore.get(redisKey))
+                .thenReturn(Optional.of(
+                        new IdempotencyCacheEntry(null, IdempotencyStatus.IN_PROGRESS)
+                ));
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> orderService.createOrder(
+                        idempotencyKey,
+                        List.of(new OrderItem("iphone-15-pro", 1))
+                )
+        );
 
         verify(inventoryGrpcClient, never()).reserveStock(anyString(), anyInt());
         verify(orderRepository, never()).save(any(Order.class));

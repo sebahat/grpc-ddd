@@ -15,8 +15,3 @@ CREATE TABLE IF NOT EXISTS order_items (
         REFERENCES orders(id)
 );
 
-CREATE TABLE IF NOT EXISTS processed_requests (
-    idempotency_key VARCHAR(255) PRIMARY KEY,
-    order_id VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL
-);
