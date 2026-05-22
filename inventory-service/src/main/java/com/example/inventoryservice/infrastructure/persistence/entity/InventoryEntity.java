@@ -19,14 +19,24 @@ public class InventoryEntity {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(name = "last_event_version")
+    private Long lastEventVersion;
+
     public InventoryEntity() {
     }
 
-    public InventoryEntity(Long id, String productId, String productName, int quantity) {
+    public InventoryEntity(
+            Long id,
+            String productId,
+            String productName,
+            int quantity,
+            Long lastEventVersion
+    ) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
+        this.lastEventVersion = lastEventVersion;
     }
 
     public Long getId() {
@@ -45,6 +55,10 @@ public class InventoryEntity {
         return quantity;
     }
 
+    public Long getLastEventVersion() {
+        return lastEventVersion;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -59,5 +73,9 @@ public class InventoryEntity {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public void setLastEventVersion(Long lastEventVersion) {
+        this.lastEventVersion = lastEventVersion;
     }
 }

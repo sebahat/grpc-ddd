@@ -1,21 +1,13 @@
-
 package com.example.inventoryservice.infrastructure.persistence.repository;
+
 import com.example.inventoryservice.application.mapper.InventoryMapper;
 import com.example.inventoryservice.domain.model.InventoryItem;
 import com.example.inventoryservice.domain.repository.InventoryItemRepository;
+import com.example.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-
-
-import com.example.inventoryservice.infrastructure.persistence.entity.InventoryEntity;
-
-
-/**
- * Domain repository implementasyonu.
- * Mapping burada yapılır.
- */
 @Repository
 public class JpaInventoryItemRepository implements InventoryItemRepository {
 

@@ -1,6 +1,5 @@
 package com.example.inventoryservice.infrastructure.kafka.validation;
 
-import com.example.inventoryservice.infrastructure.kafka.dto.EventType;
 import com.example.inventoryservice.infrastructure.kafka.dto.InventorySyncEvent;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +10,14 @@ public class InventorySyncEventValidator {
 
         if (event == null) {
             throw new IllegalArgumentException("event must not be null");
+        }
+
+        if (event.getEventId() == null || event.getEventId().isBlank()) {
+            throw new IllegalArgumentException("eventId must not be empty");
+        }
+
+        if (event.getVersion() == null || event.getVersion() <= 0) {
+            throw new IllegalArgumentException("version must be greater than 0");
         }
 
         if (event.getEventType() == null) {
