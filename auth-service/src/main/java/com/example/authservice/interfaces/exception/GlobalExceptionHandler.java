@@ -1,0 +1,47 @@
+package com.example.authservice.interfaces.exception;
+
+import com.example.authservice.domain.exception.InvalidCredentialsException;
+import com.example.authservice.domain.exception.UserAlreadyExistsException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleUserAlreadyExists(
+            UserAlreadyExistsException ex
+    ) {
+        return ex.getMessage();
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleInvalidCredentials(
+            InvalidCredentialsException ex
+    ) {
+        return "invalid username or password";
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleValidation(
+            MethodArgumentNotValidException ex
+    ) {
+        return ex.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleGeneric(
+            Exception ex
+    ) {
+        return "internal server error";
+    }
+}
