@@ -5,10 +5,10 @@
 - Implemented Kafka Dead Letter Queue (DLQ) for failure handling
 - Designed hybrid communication using gRPC and Kafka
 - Applied Domain-Driven Design (DDD) principles
-- Built idempotent order processing
-- Implemented Kafka event idempotency using eventId tracking
+- Built Redis-backed idempotent order processing using Idempotency-Key
+- Implemented Redis-based Kafka event deduplication using eventId
 - Added version-based stale event protection for inventory sync events
-- Introduced retry and fallback mechanisms
+- Introduced retry, fallback and circuit breaker mechanisms
 - Implemented atomic stock reservation to prevent race conditions
 
 This project demonstrates a distributed microservices architecture using Spring Boot, gRPC, and Kafka, designed with Domain-Driven Design (DDD) principles.
@@ -26,6 +26,7 @@ It simulates a real-world e-commerce backend where order processing and inventor
 - PostgreSQL  
 - Docker / Docker Compose  
 - JUnit / Mockito  
+- Redis
 
 ---
 
@@ -64,7 +65,8 @@ Responsible for:
 Key features:
 
 * gRPC client integration
-* Idempotency handling
+* Redis-backed idempotency handling
+* Duplicate request protection
 * Exception management
 * Domain-driven structure
 
@@ -81,7 +83,7 @@ Key features:
 
 * gRPC server implementation
 * Kafka consumer
-* Kafka event idempotency with processed event tracking
+* Redis-based Kafka event deduplication
 * Version-based stale event protection
 * Validation layer
 * Persistence with JPA
@@ -121,7 +123,7 @@ Why Kafka?
 * Decoupled, event-driven communication
 * Scalable and resilient message processing
 * Supports resilient at-least-once event consumption
-* Event idempotency protection using unique eventId tracking
+* Redis-backed event deduplication using eventId
 * Version-based stale event protection for inventory synchronization
 
 Why both?
@@ -154,8 +156,8 @@ Implementation can be found in the Inventory Service repository layer.
 * Kafka Dead Letter Queue (DLQ) for failure handling
 * Domain-Driven Design style layering
 * Event-driven architecture
-* Idempotent request handling
-* Kafka event idempotency using eventId
+* Redis-backed request idempotency
+* Redis-based Kafka event deduplication
 * Version-based stale event protection
 * Validation layer
 * Exception handling strategy
@@ -197,6 +199,7 @@ docker compose up --build
 * Inventory Service REST: localhost:8080
 * Inventory Service gRPC: localhost:9090
 * Kafka: localhost:29092
+* Redis: localhost:6379
 
 ---
 ## ☸️ Kubernetes Deployment
@@ -210,6 +213,7 @@ The system is fully deployed on Kubernetes using Docker Desktop Kubernetes.
 - Inventory Sync Service
 - Kafka
 - Zookeeper
+- Redis
 - PostgreSQL (separate instance per service)
 
 ### Key Capabilities
@@ -289,8 +293,8 @@ Content-Type: application/json
 The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
-* Add cache-based idempotency support for request handling
 * Add authentication and JWT-based user context
+* Improve observability with correlation IDs and tracing
 
 ## 👨‍💻 Author
 
