@@ -26,7 +26,8 @@ spec:
               value: postgres
             - name: JWT_SECRET
               value: change-this-secret-key-change-this-secret-key
-
+            - name: JWT_EXPIRATION_MS
+              value: "3600000"
           ports:
             - containerPort: 9094
 ---
