@@ -1,46 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order-service
+  name: auth-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: order-service
+      app: auth-service
   template:
     metadata:
       labels:
-        app: order-service
+        app: auth-service
     spec:
       containers:
-        - name: order-service
-          image: order-service:latest
+        - name: auth-service
+          image: auth-service:latest
           imagePullPolicy: Never
 
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://order-postgres:5432/ordersdb
+              value: jdbc:postgresql://auth-postgres:5432/authdb
             - name: SPRING_DATASOURCE_USERNAME
               value: postgres
             - name: SPRING_DATASOURCE_PASSWORD
               value: postgres
-            - name: SPRING_DATA_REDIS_HOST
-              value: redis
-            - name: SPRING_DATA_REDIS_PORT
-              value: "6379"
             - name: JWT_SECRET
               value: change-this-secret-key-change-this-secret-key
+            - name: JWT_EXPIRATION_MS
+              value: "3600000"
           ports:
-            - containerPort: 9092
+            - containerPort: 9094
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: order-service
+  name: auth-service
 spec:
   selector:
-    app: order-service
+    app: auth-service
   ports:
     - name: http
-      port: 9092
-      targetPort: 9092
+      port: 9094
+      targetPort: 9094
