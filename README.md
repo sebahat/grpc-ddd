@@ -24,7 +24,8 @@ It simulates a real-world e-commerce backend where order processing and inventor
 - Apache Kafka  
 - gRPC  
 - PostgreSQL  
-- Docker / Docker Compose  
+- Docker / Docker Compose 
+- Kubernetes 
 - JUnit / Mockito  
 - Redis
 
@@ -32,16 +33,19 @@ It simulates a real-world e-commerce backend where order processing and inventor
 
 ## 🏗️ Architecture Overview
 
-The system consists of three main services:
+The system is composed of four core services:
 
-- Order Service  
-- Inventory Service  
-- Inventory Sync Service  
+- Auth Service
+- Order Service
+- Inventory Service
+- Inventory Sync Service
 
 ### 🔄 Communication Model
 ```text
 
-Order Service  ──(gRPC)────────▶ Inventory Service
+Client ──(JWT Auth)────────────▶ Auth Service
+
+Order Service ──(gRPC)────────▶ Inventory Service
 
 Inventory Sync ──(Kafka Event)─▶ Inventory Service
 
@@ -52,6 +56,24 @@ Inventory Sync ──(Kafka Event)─▶ Inventory Service
 ---
 
 ## 📦 Services
+
+### 🔐 Auth Service
+
+Responsible for:
+
+* User registration
+* User login
+* JWT token generation
+
+Key features:
+
+* Spring Security integration
+* JWT-based authentication
+* Password encryption
+* Validation layer
+* PostgreSQL persistence
+
+
 
 ### 🛒 Order Service
 
@@ -98,9 +120,12 @@ Responsible for:
 
 Key features:
 
-* REST endpoint to trigger events
+* REST API for stock event publishing
+* Swagger documentation
 * Kafka producer
 * Event abstraction
+* Validation layer
+* Actuator health checks
 
 
 ## 📡 Event-Driven Flow
@@ -167,9 +192,22 @@ Implementation can be found in the Inventory Service repository layer.
 * Encapsulation of OrderItem within Order aggregate
 
 
-## 🐳 Running the Project
+## 🐳 Running the Project (Docker)
 
-Each service has its own Docker setup.
+Kafka infrastructure is managed centrally at the project root, while each microservice manages its own runtime dependencies.
+
+### Start shared infrastructure
+
+```bash
+docker compose up -d
+```
+
+### Auth Service
+
+```bash
+cd auth-service
+docker compose up --build
+```
 
 ### Inventory Service
 
@@ -194,6 +232,7 @@ docker compose up --build
 
 ### Service Ports
 
+* Auth Service: localhost:9094
 * Order Service: localhost:9092
 * Inventory Sync Service: localhost:9093
 * Inventory Service REST: localhost:8080
@@ -207,7 +246,7 @@ docker compose up --build
 The system is fully deployed on Kubernetes using Docker Desktop Kubernetes.
 
 ### Deployed Components
-
+- Auth Service
 - Order Service
 - Inventory Service
 - Inventory Sync Service
@@ -221,7 +260,8 @@ The system is fully deployed on Kubernetes using Docker Desktop Kubernetes.
 - Service-to-service communication via gRPC
 - Event-driven communication via Kafka
 - Kubernetes DNS-based service discovery
-- Environment-based configuration override
+- Isolated service deployment
+- End-to-end stock/order flow validation
 - Atomic stock reservation validated under Kubernetes
 
 ### Running on Kubernetes
@@ -232,15 +272,20 @@ kubectl apply -f k8s/
 
 ### Verification
 
-- Swagger UI: http://localhost:9092/swagger-ui/index.html
-- Inventory Sync Health: http://localhost:9093/api/inventory-events/ping
+- Auth Service → http://localhost:9094/swagger-ui/index.html
+- Order Service → http://localhost:9092/swagger-ui/index.html
+- Inventory Sync Service → http://localhost:9093/swagger-ui/index.html
 
 
 
 ## 📘 API Documentation
 
-After starting the Order Service, Swagger UI is available at:
-http://localhost:9092/swagger-ui/index.html
+Swagger UI endpoints:
+
+- Auth Service → http://localhost:9094/swagger-ui/index.html
+- Order Service → http://localhost:9092/swagger-ui/index.html
+- Inventory Sync Service → http://localhost:9093/swagger-ui/index.html
+
 
 ## 🧪 Testing
 
@@ -248,6 +293,8 @@ Unit tests are implemented using JUnit and Mockito.
 
 Examples:
 
+* AuthApplicationServiceTest
+* JwtServiceTest
 * OrderServiceTest
 * InventoryApplicationServiceTest
 * InventoryEventServiceTest
@@ -293,9 +340,8 @@ Content-Type: application/json
 The response represents the Order aggregate, which contains OrderItems as internal entities.
 
 ## 📌 Future Improvements
-* Add authentication and JWT-based user context
 * Improve observability with correlation IDs and tracing
 
 ## 👨‍💻 Author
 
-Developed as a hands-on project to explore distributed systems, microservices communication patterns, event-driven architecture and backend system design.
+Developed as a hands-on distributed systems project focused on microservice communication, event-driven architecture, resilience patterns, and domain-driven design.
